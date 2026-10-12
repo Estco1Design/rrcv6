@@ -1,0 +1,510 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   RRC DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Colors - Dark premium palette */
+  --rrc-black: #080809;
+  --rrc-coal: #111114;
+  --rrc-panel: #1a1a1e;
+  --rrc-white: #E9E5DF;
+  --rrc-off: #A5A0A0;
+  --rrc-muted: #5f5c58;
+  --rrc-bordeaux: #4A1022;
+  --rrc-wine: #701B32;
+  --rrc-navy: #101D46;
+  --rrc-silver: #B7BBC3;
+  --rrc-red: #7e0a18;
+  
+  /* Lines and borders */
+  --rrc-line: rgba(233, 229, 223, 0.14);
+  --rrc-line-soft: rgba(233, 229, 223, 0.07);
+  
+  /* Typography */
+  /* Font variables are supplied by next/font on body, without self-reference. */
+  
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 16px;
+  --sp-4: 24px;
+  --sp-5: 40px;
+  --sp-6: 72px;
+  --sp-7: 120px;
+  
+  /* Motion */
+  --m-fast: 0.18s;
+  --m-norm: 0.45s;
+  --m-slow: 0.9s;
+  --m-cine: 1.8s;
+  --e-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --e-cine: cubic-bezier(0.83, 0, 0.17, 1);
+  --e-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-index layers */
+  --z-base: 0;
+  --z-content: 10;
+  --z-overlay: 20;
+  --z-modal: 30;
+  --z-drawer: 40;
+  --z-toast: 50;
+  --z-max: 100;
+}
+
+/* Reset and base */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--rrc-black);
+  color: var(--rrc-white);
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 2.5vw, 14px);
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area for mobile devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Selection */
+::selection {
+  background: var(--rrc-wine);
+  color: var(--rrc-white);
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--m-fast) var(--e-out);
+}
+
+a:hover {
+  color: var(--rrc-silver);
+}
+
+/* Buttons */
+button {
+  font-family: var(--font-mono);
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  transition: all var(--m-fast) var(--e-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 1px solid var(--rrc-wine);
+  outline-offset: 3px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rrc-line);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rrc-off);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rrc-line) transparent;
+}
+
+/* Typography utilities */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.02;
+}
+
+.t-micro {
+  font-size: clamp(10px, 2vw, 10px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.t-ui {
+  font-size: clamp(10px, 2.2vw, 11px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.t-label {
+  font-size: clamp(11px, 2.3vw, 12px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Body text - более тонкий вес */
+body p, body span, body a, body button {
+  font-weight: 400;
+}
+
+/* Заголовки - лёгкие веса */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* Mobile typography adjustments */
+@media (max-width: 768px) {
+  h1 {
+    font-size: clamp(20px, 5vw, 26px);
+  }
+  
+  h2 {
+    font-size: clamp(18px, 4.5vw, 22px);
+  }
+  
+  h3 {
+    font-size: clamp(16px, 4vw, 18px);
+  }
+  
+  body p, body span {
+    font-size: clamp(13px, 3vw, 15px);
+  }
+}
+
+/* Color utilities */
+.text-white { color: var(--rrc-white); }
+.text-off { color: var(--rrc-off); }
+.text-muted { color: var(--rrc-muted); }
+.text-bordeaux { color: var(--rrc-bordeaux); }
+.text-wine { color: var(--rrc-wine); }
+.text-silver { color: var(--rrc-silver); }
+
+/* Prevent horizontal overflow */
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable blur animations for reduced motion */
+  .blur-sm, .blur, .backdrop-blur-sm, .backdrop-blur {
+    filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* View Transitions - calm black fade/reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+  animation-timing-function: var(--e-out);
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Respect reduced motion for view transitions */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* SplitType reveal animation base classes */
+.split-type-word,
+.split-type-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.9s var(--e-cine), transform 0.9s var(--e-cine);
+}
+
+.split-type-word.split-type-active,
+.split-type-char.split-type-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for chars/words */
+.split-type-char.split-type-active:nth-child(1) { transition-delay: 0.02s; }
+.split-type-char.split-type-active:nth-child(2) { transition-delay: 0.04s; }
+.split-type-char.split-type-active:nth-child(3) { transition-delay: 0.06s; }
+.split-type-char.split-type-active:nth-child(4) { transition-delay: 0.08s; }
+.split-type-char.split-type-active:nth-child(5) { transition-delay: 0.10s; }
+.split-type-char.split-type-active:nth-child(6) { transition-delay: 0.12s; }
+.split-type-char.split-type-active:nth-child(7) { transition-delay: 0.14s; }
+.split-type-char.split-type-active:nth-child(8) { transition-delay: 0.16s; }
+.split-type-char.split-type-active:nth-child(9) { transition-delay: 0.18s; }
+.split-type-char.split-type-active:nth-child(10) { transition-delay: 0.20s; }
+.split-type-char.split-type-active:nth-child(11) { transition-delay: 0.22s; }
+.split-type-char.split-type-active:nth-child(12) { transition-delay: 0.24s; }
+.split-type-char.split-type-active:nth-child(13) { transition-delay: 0.26s; }
+.split-type-char.split-type-active:nth-child(14) { transition-delay: 0.28s; }
+.split-type-char.split-type-active:nth-child(15) { transition-delay: 0.30s; }
+.split-type-char.split-type-active:nth-child(16) { transition-delay: 0.32s; }
+.split-type-char.split-type-active:nth-child(17) { transition-delay: 0.34s; }
+.split-type-char.split-type-active:nth-child(18) { transition-delay: 0.36s; }
+.split-type-char.split-type-active:nth-child(19) { transition-delay: 0.38s; }
+.split-type-char.split-type-active:nth-child(20) { transition-delay: 0.40s; }
+
+/* Word-level stagger for larger titles */
+.split-type-word.split-type-active:nth-child(1) { transition-delay: 0.05s; }
+.split-type-word.split-type-active:nth-child(2) { transition-delay: 0.10s; }
+.split-type-word.split-type-active:nth-child(3) { transition-delay: 0.15s; }
+.split-type-word.split-type-active:nth-child(4) { transition-delay: 0.20s; }
+.split-type-word.split-type-active:nth-child(5) { transition-delay: 0.25s; }
+.split-type-word.split-type-active:nth-child(6) { transition-delay: 0.30s; }
+.split-type-word.split-type-active:nth-child(7) { transition-delay: 0.35s; }
+.split-type-word.split-type-active:nth-child(8) { transition-delay: 0.40s; }
+.split-type-word.split-type-active:nth-child(9) { transition-delay: 0.45s; }
+.split-type-word.split-type-active:nth-child(10) { transition-delay: 0.50s; }
+
+/* Reduced motion for SplitType */
+@media (prefers-reduced-motion: reduce) {
+  .split-type-word,
+  .split-type-char {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Ensure tap targets are at least 44x44px for accessibility */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on input focus on iOS */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Tailwind custom properties */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* RRC BOOT INTRO — скрытие живого логотипа Header на время полёта интро-RRC.
+   Только opacity (без display:none) → getBoundingClientRect продолжает работать.
+   Атрибут data-rrc-intro-hidden снимается в finish() → логотип возвращается.
+   transition override — чтобы анимация появления была мгновенной и синхронной
+   с уходом оверлея (в Header стоит transition-all). */
+[data-rrc-logo-target][data-rrc-intro-hidden] {
+  opacity: 0 !important;
+  transition-property: none !important;
+}
+
+/* ============================================================
+   RRC BOOT INTRO — кнопки (минимализм, тонкий премиальный hover)
+   - border glow + едва заметный shimmer на hover (CSS-only, GPU)
+   - square corners, прозрачный фон, uppercase tracking — без изменений
+   ============================================================ */
+.rrc-intro-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #fff;
+  transition:
+    border-color 0.4s var(--e-out),
+    box-shadow 0.4s var(--e-out),
+    background-color 0.3s var(--e-out),
+    color 0.3s var(--e-out);
+}
+
+/* тонкий внешний glow по border — появляется на hover/focus */
+.rrc-intro-btn::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.16),
+    0 0 18px -4px rgba(220, 228, 240, 0.22),
+    inset 0 0 14px -8px rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  transition: opacity 0.45s var(--e-out);
+  pointer-events: none;
+}
+
+/* very subtle shimmer: редкая диагональная полоска света поверх кнопки */
+.rrc-intro-btn::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 40%;
+  z-index: 1;
+  transform: translateX(-160%) skewX(-12deg);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.09),
+    transparent
+  );
+  pointer-events: none;
+  animation: rrc-intro-shimmer 7.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes rrc-intro-shimmer {
+  0%        { transform: translateX(-160%) skewX(-12deg); }
+  14%, 100% { transform: translateX(420%)  skewX(-12deg); }
+}
+
+.rrc-intro-btn:hover,
+.rrc-intro-btn:focus-visible {
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 24px -10px rgba(225, 232, 242, 0.35);
+}
+
+.rrc-intro-btn:hover::after,
+.rrc-intro-btn:focus-visible::after {
+  opacity: 1;
+}
+
+/* hover = инверсия: белый фон, чёрный текст (как было раньше) */
+.rrc-intro-btn:hover,
+.rrc-intro-btn:focus-visible {
+  background: #fff;
+  color: #000;
+}
+
+.rrc-intro-btn:active {
+  transform: scale(0.985);
+}
+
+/* PRIVATE / secondary вариант: тише border, мягче hover (без полной инверсии) */
+.rrc-intro-btn--ghost {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rrc-intro-btn--ghost::before {
+  animation-delay: 3.6s; /* фазовый сдвиг — полосы кнопок не мигают синхронно */
+}
+
+.rrc-intro-btn--ghost:hover,
+.rrc-intro-btn--ghost:focus-visible {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+/* Reduced motion: фон intro замирает в статичную глубину, shimmer off */
+@media (prefers-reduced-motion: reduce) {
+  [data-rrc-intro-bg] *,
+  [data-rrc-intro-bg] {
+    animation: none !important;
+    transition: none !important;
+  }
+  .rrc-intro-btn::before {
+    display: none;
+  }
+  .rrc-intro-btn,
+  .rrc-intro-btn::after {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* RRC cinematic movement: transform/opacity only, no scroll interception. */
+.rrc-scene-reveal { transition: opacity 850ms ease, transform 950ms cubic-bezier(.22,1,.36,1); }
+.rrc-reveal-pending { opacity: 0; transform: translateY(32px); }
+.rrc-hero-link { position: relative; overflow: hidden; }
+.rrc-hero-link::before { content: ''; position: absolute; inset: 0; background: #701b32; transform: translateY(102%); transition: transform 500ms cubic-bezier(.22,1,.36,1); z-index: -1; }
+.rrc-hero-link:hover::before { transform: translateY(0); }
+.rrc-hero-arrow { transition: transform 400ms ease; }
+.rrc-hero-link:hover .rrc-hero-arrow { transform: translate(3px,-3px); }
+.rrc-scroll-line { display:block; position:relative; width:1px; height:32px; background:rgba(255,255,255,.2); overflow:hidden; }
+.rrc-scroll-line::after { content:''; position:absolute; width:1px; height:16px; background:#edeae4; animation:rrc-scroll-light 2.4s ease-in-out infinite; }
+@keyframes rrc-scroll-light { 0% { transform:translateY(-16px); } 70%,100% { transform:translateY(40px); } }
+@media (prefers-reduced-motion: reduce) {
+ .rrc-scene-reveal,.rrc-reveal-pending { opacity:1;transform:none;transition:none; }
+ .rrc-scroll-line::after { animation:none; }
+ .rrc-hero-arrow,.rrc-hero-link::before { transition:none; }
+}
+
+.rrc-preorder-flag {display:inline-flex;align-items:center;gap:7px;position:relative;overflow:hidden;background:#541326;border:1px solid #925164;color:#edeae4;padding:7px 10px;font-family:var(--font-mono),monospace;font-size:9px;letter-spacing:.13em;line-height:1;white-space:nowrap;}
+.rrc-preorder-dot {width:4px;height:4px;background:#edeae4;flex:none;}
+.rrc-preorder-shine {position:absolute;inset:0;background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.2) 50%,transparent 75%);transform:translateX(-120%);}
+.rrc-preorder-flag.is-visible .rrc-preorder-shine {animation:rrc-preorder-shine 6s ease-in-out infinite;}
+@keyframes rrc-preorder-shine {0%,65%{transform:translateX(-120%)}90%,100%{transform:translateX(120%)}}
+.rrc-account-panel {position:relative;transition:border-color .25s ease;background:#0c0b0c;border:1px solid #29262a;}
+.rrc-account-panel:focus-within {border-color:#925164;}
+.rrc-account-panel::before {content:'';position:absolute;top:-1px;left:-1px;width:20px;height:20px;border-left:1px solid #925164;border-top:1px solid #925164;pointer-events:none;}
+.rrc-action {transition:background-color .2s ease,transform .2s ease;}
+@media(hover:hover) {.rrc-action:hover {transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce) {.rrc-preorder-flag.is-visible .rrc-preorder-shine{animation:none}.rrc-action{transition:none;transform:none!important}}
+
+@keyframes rrc-archive-enter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion:no-preference) { .rrc-account-panel { animation:rrc-archive-enter .4s ease-out both; } }

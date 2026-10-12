@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://richrussiancommunity.com}
+        NEXT_PUBLIC_RRC_TELEGRAM: ${NEXT_PUBLIC_RRC_TELEGRAM:-}
+        NEXT_PUBLIC_RRC_EMAIL: ${NEXT_PUBLIC_RRC_EMAIL:-}
+        NEXT_PUBLIC_RRC_VK: ${NEXT_PUBLIC_RRC_VK:-}
+    restart: unless-stopped
+    env_file: .env.production
+    expose:
+      - "3000"
+    volumes:
+      - image_cache:/app/.next/cache
+      - account_data:/app/var
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env.production}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+volumes:
+  image_cache:
+  account_data:
+  caddy_data:
+  caddy_config:
