@@ -2,51 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { IntroBackground } from '@/components/intro/IntroBackground';
 import {useLanguage} from '@/i18n';
 import {DialogFocus} from '@/components/ui/DialogFocus';
-import { markPrivateSession } from '@/lib/private-session';
 
-/**
- * RRC INTRO (входной экран)
- *
- * 0.00–0.30s  — полностью чёрный экран
- * 0.30–3.00s  — RICHRUSSIANCOMMUNITY собирается по буквам:
- *               reveal через clip-path (маска снизу вверх), каждая буква
- *               поднимается на ~8px, лёгкий stagger. Это НЕ typewriter.
- * 3.00–3.30s  — пауза
- * 3.30–3.70s  — появляются две кнопки: ВОЙТИ / PRIVATE ACCESS
- *               (максимум до появления кнопок — 5 секунд)
- *
- * Intro НЕ закрывается автоматически — ждёт действия пользователя.
- *
- * ВОЙТИ          — закрытие за 300–450ms + sessionStorage rr_intro_seen
- * PRIVATE ACCESS — не закрывает intro; вместо кнопок появляется форма
- *                  {ru ? 'КОД ДОСТУПА' : 'ACCESS CODE'} / [ ENTER CODE ] / ENTER / BACK.
- *                  {ru ? 'НАЗАД' : 'BACK'} и Escape возвращают две кнопки без reload.
- *                  ENTER → POST /api/private-access/verify (проверка кода
- *                  на сервере, коды в env RRC_PRIVATE_CODES); успех →
- *                  cookie rrc_private_access + переход на /private
- *                  (отдельный private welcome — НЕ обычная главная);
- *                  ошибка → деликатная подпись INVALID CODE, код не
- *                  светится в UI.
- *
- * Фон: IntroBackground — архитектурные направляющие с медленным drift,
- * слабый центральный breathing glow, едва заметная vignette и grain.
- * Всё CSS/SVG (без canvas/WebGL), transform-only анимации.
- *
- * Стиль: минимализм — тонкие border, square corners, uppercase, tracking,
- * very subtle shimmer + border glow на кнопках. Без glitch / neon / RGB /
- * 3D / spinner / %.
- *
- * prefers-reduced-motion: буквы появляются сразу, фон статичен, shimmer off.
- */
-
+/** Brand introduction with public and registered-member entry points. */
 const INTRO_SEEN_KEY = 'rrc_intro_seen';
-// Путь private welcome — отдельный экран после успешного ACCESS CODE.
-// На /private* интро не показывается (там свой, приватный UX).
-const PRIVATE_WELCOME_PATH = '/private';
 
 // Тайминги (секунды)
 const T_BLACK = 0.3;          // чёрный экран до старта букв
@@ -59,19 +21,13 @@ const LETTER_DUR = 0.5;
 // stagger подобран так, чтобы сборка слова заняла окно 0.3–3.0s
 const STAGGER = (T_LETTERS_END - T_LETTERS_START - LETTER_DUR) / (LETTERS.length - 1);
 
-type Mode = 'buttons' | 'form';
 type Phase = 'init' | 'visible' | 'closing' | 'done';
-type VerifyState = 'idle' | 'checking' | 'invalid' | 'unavailable' | 'limited';
 
 export function RrcBootIntro() {
   const {language} = useLanguage(); const ru = language === 'ru';
   const [phase, setPhase] = useState<Phase>('init');
-  const [mode, setMode] = useState<Mode>('buttons');
-  const [code, setCode] = useState('');
-  const [verify, setVerify] = useState<VerifyState>('idle');
   const [reduced, setReduced] = useState(false);
   const closingRef = useRef(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   // Первый mount (client-only): sessionStorage читаем только на клиенте —
@@ -113,66 +69,6 @@ export function RrcBootIntro() {
     window.setTimeout(() => setPhase('done'), 420);
   }, []);
 
-  // Escape: в форме — назад к кнопкам; на экране кнопок ничего не закрываем
-  // (intro ждёт действия пользователя, авто-закрытия нет).
-  useEffect(() => {
-    if (phase !== 'visible') return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mode === 'form') {
-        e.preventDefault();
-        setMode('buttons');
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [phase, mode]);
-
-  // Фокус в поле при открытии формы + сброс состояния проверки
-  useEffect(() => {
-    if (mode === 'form') {
-      setVerify('idle');
-      const id = window.setTimeout(() => inputRef.current?.focus(), 60);
-      return () => window.clearTimeout(id);
-    }
-  }, [mode]);
-
-  // Проверка кода — на сервере (POST /api/private-access/verify).
-  // Клиент не знает и не хранит список допустимых кодов.
-  const submitCode = useCallback(async () => {
-    const value = code.trim();
-    if (!value || verify === 'checking') return;
-    setVerify('checking');
-    try {
-      const res = await fetch('/api/private-access/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: value }),
-      });
-      if (res.ok) {
-        // Доступ подтверждён (server установил httpOnly-cookie).
-        // НЕ открываем обычную главную: уходим на отдельный private welcome.
-        setCode('');
-        markPrivateSession();
-        try {
-          sessionStorage.setItem(INTRO_SEEN_KEY, 'true');
-        } catch {
-          /* storage может быть недоступен — не блокируем переход */
-        }
-        closingRef.current = true;
-        setPhase('closing');
-        window.setTimeout(() => {
-          setPhase('done');
-          router.push(PRIVATE_WELCOME_PATH);
-        }, 420);
-      } else {
-        setVerify(res.status === 503 ? 'unavailable' : res.status === 429 ? 'limited' : 'invalid');
-      }
-    } catch {
-      // Сеть недоступна — деликатно просим повторить, без паники
-      setVerify('invalid');
-    }
-  }, [code, verify, router]);
-
   // Scroll lock, пока intro виден
   useEffect(() => {
     const html = document.documentElement;
@@ -181,6 +77,7 @@ export function RrcBootIntro() {
     } else {
       html.style.removeProperty('overflow');
     }
+    return()=>{html.style.removeProperty('overflow');};
   }, [phase]);
 
   if (phase === 'init' || phase === 'done') return null;
@@ -245,104 +142,10 @@ export function RrcBootIntro() {
 
       {/* ---------- Кнопки / форма (data-rrc-intro-actions — якорь для тестов) ---------- */}
       <div data-rrc-intro-actions="" className="relative z-10 mt-12 flex min-h-[140px] w-full items-start justify-center px-4 sm:mt-14">
-        <AnimatePresence mode="wait">
-          {mode === 'buttons' ? (
-            <motion.div
-              key="buttons"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.18 } }}
-              transition={{
-                delay: reduced ? 0 : T_BUTTONS_START,
-                duration: reduced ? 0.2 : 0.4,
-                ease: 'easeOut',
-              }}
-              className="flex w-full max-w-[420px] flex-col items-stretch gap-3 sm:flex-row sm:justify-center sm:gap-4"
-            >
-              <IntroButton onClick={closeIntro} label={ru ? "ВОЙТИ" : "ENTER"} />
-              <IntroButton
-                onClick={() => setMode('form')}
-                label="PRIVATE ACCESS"
-                variant="ghost"
-              />
-            </motion.div>
-          ) : (
-            <motion.form
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              onSubmit={(e) => {
-                // Проверка кода — на сервере; отправка не перезагружает страницу
-                e.preventDefault();
-                void submitCode();
-              }}
-              className="flex w-full max-w-[320px] flex-col items-stretch gap-3"
-            >
-              <label
-                htmlFor="rrc-access-code"
-                className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/60"
-              >
-                {ru ? 'КОД ДОСТУПА' : 'ACCESS CODE'}
-              </label>
-
-              <input
-                id="rrc-access-code"
-                ref={inputRef}
-                type="text"
-                inputMode="text"
-                autoComplete="off"
-                spellCheck={false}
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value);
-                  if (verify === 'invalid') setVerify('idle');
-                }}
-                placeholder={ru ? '[ ВВЕДИТЕ КОД ]' : '[ ENTER CODE ]'} maxLength={100}
-                aria-invalid={verify === 'invalid' || undefined}
-                className="w-full border border-white/30 bg-transparent px-4 py-3 font-mono text-base uppercase tracking-[0.2em] text-white placeholder:text-white/25 focus:border-white/70 focus:outline-none"
-                /* text-base = 16px → без iOS zoom на фокусе */
-              />
-
-              {/* Деликатный статус: без раскрытия причин и без света на коде */}
-              <div
-                aria-live="polite"
-                className="min-h-[16px] font-mono text-[10px] uppercase tracking-[0.25em]"
-              >
-                {verify === 'checking' && (
-                  <span className="text-white/40">CHECKING…</span>
-                )}
-                {['invalid', 'unavailable', 'limited'].includes(verify) && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-white/55"
-                  >
-                    {verify === 'unavailable' ? (ru ? 'PRIVATE-ДОСТУП ПОКА ЗАКРЫТ' : 'PRIVATE ACCESS IS CLOSED') : verify === 'limited' ? (ru ? 'ПОВТОРИТЕ ЧЕРЕЗ МИНУТУ' : 'TRY AGAIN IN ONE MINUTE') : (ru ? 'НЕВЕРНЫЙ КОД — ПОВТОРИТЕ' : 'INVALID CODE — TRY AGAIN')}
-                  </motion.span>
-                )}
-              </div>
-
-              <div className="mt-1 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="submit"
-                  disabled={verify === 'checking'}
-                  className="rrc-intro-btn flex-1 px-6 py-3 font-mono text-xs uppercase tracking-[0.25em] disabled:opacity-60"
-                >
-                  {verify === 'checking' ? (ru ? 'ПРОВЕРКА' : 'CHECKING') : (ru ? 'ВОЙТИ' : 'ENTER')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('buttons')}
-                  className="rrc-intro-btn rrc-intro-btn--ghost flex-1 px-6 py-3 font-mono text-xs uppercase tracking-[0.25em]"
-                >
-                  {ru ? 'НАЗАД' : 'BACK'}
-                </button>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:reduced?0:T_BUTTONS_START,duration:reduced?0:.4}} className="flex w-full max-w-[460px] flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
+          <IntroButton onClick={closeIntro} label={ru?'ВОЙТИ':'ENTER'}/>
+          <IntroButton onClick={()=>{closeIntro();router.push('/access')}} label={ru?'ЗАКРЫТЫЙ УРОВЕНЬ':'CLOSED LEVEL'} variant="ghost"/>
+        </motion.div>
       </div>
 
       {/* Затухание всего overlay при закрытии (ВОЙТИ) — 420ms */}

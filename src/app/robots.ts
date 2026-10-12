@@ -1,5 +1,6 @@
 import type {MetadataRoute} from 'next';
 import {siteConfig} from '@/config/site';
 export default function robots(): MetadataRoute.Robots {
- return {rules: {userAgent: '*', allow: '/', disallow: ['/account', '/studio', '/private', '/admin', '/api/', '/cart', '/checkout', '/favorites', '/search']}, sitemap: siteConfig.url ? `${siteConfig.url.replace(/\/$/, '')}/sitemap.xml` : undefined};
+ // Utility pages expose noindex metadata; allow crawlers to read that directive.
+ return {rules: {userAgent: '*', allow: '/', disallow: ['/account', '/access', '/studio', '/private', '/api/']}, sitemap: siteConfig.url ? `${siteConfig.url.replace(/\/$/, '')}/sitemap.xml` : undefined};
 }

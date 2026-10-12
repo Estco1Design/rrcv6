@@ -1,0 +1,17 @@
+/** Shared UI limits and instructions; every measurement remains optional. */
+export const measurements = {
+ height: {ru:'Рост',en:'Height',unit:'cm',min:100,max:230,ruHelp:'Встаньте босиком у стены, выпрямитесь и смотрите прямо. Измерьте расстояние от пола до макушки.',enHelp:'Stand barefoot against a wall, looking straight ahead. Measure from the floor to the crown of your head.'},
+ weight: {ru:'Вес',en:'Weight',unit:'kg',min:25,max:300,ruHelp:'Укажите вес по весам. Вес не является обхватом и не определяет размер одежды сам по себе.',enHelp:'Use a scale. Weight is not a circumference and does not determine your clothing size on its own.'},
+ neck: {ru:'Обхват шеи',en:'Neck circumference',unit:'cm',min:20,max:70,ruHelp:'Проведите ленту вокруг основания шеи, там, где проходит воротник. Не затягивайте ленту.',enHelp:'Wrap the tape around the base of your neck, where a collar sits. Do not pull it tight.'},
+ chest: {ru:'Обхват груди',en:'Chest circumference',unit:'cm',min:40,max:200,ruHelp:'Лента проходит горизонтально по наиболее выступающим точкам груди и лопаткам. Дышите спокойно.',enHelp:'Keep the tape horizontal around the fullest part of your chest and shoulder blades. Breathe normally.'},
+ waist: {ru:'Обхват талии',en:'Waist circumference',unit:'cm',min:35,max:200,ruHelp:'Измерьте естественную талию — наиболее узкое место туловища. Не втягивайте живот.',enHelp:'Measure your natural waist, the narrowest part of your torso. Do not pull your stomach in.'},
+ hips: {ru:'Обхват бёдер',en:'Hip circumference',unit:'cm',min:40,max:220,ruHelp:'Поставьте стопы вместе. Проведите ленту горизонтально вокруг наиболее выступающей части ягодиц.',enHelp:'Stand with your feet together. Keep the tape horizontal around the fullest part of your hips and seat.'},
+ shoulder: {ru:'Ширина плеч',en:'Shoulder width',unit:'cm',min:20,max:80,ruHelp:'Измерьте по спине от одной плечевой точки до другой. Попросите кого-нибудь помочь.',enHelp:'Measure across your back from one shoulder point to the other. Ask someone to help.'},
+ sleeve: {ru:'Длина рукава',en:'Sleeve length',unit:'cm',min:10,max:110,ruHelp:'Слегка согните руку. Измерьте от плечевой точки через локоть до запястья.',enHelp:'Bend your arm slightly. Measure from the shoulder point through the elbow to the wrist.'},
+ upperArm: {ru:'Обхват плеча',en:'Upper arm circumference',unit:'cm',min:15,max:80,ruHelp:'Опустите расслабленную руку. Измерьте наиболее широкую часть верхней половины руки.',enHelp:'Relax your arm at your side. Measure around the widest part of your upper arm.'},
+ thigh: {ru:'Обхват бедра',en:'Thigh circumference',unit:'cm',min:25,max:120,ruHelp:'Измерьте одну ногу в наиболее широкой части бедра, чуть ниже ягодичной складки.',enHelp:'Measure around one thigh at its widest point, just below the seat.'},
+ calf: {ru:'Обхват голени',en:'Calf circumference',unit:'cm',min:15,max:80,ruHelp:'Измерьте наиболее широкую часть голени стоя, не напрягая мышцы.',enHelp:'Stand relaxed and measure around the widest part of your calf.'},
+ inseam: {ru:'Шаговая длина',en:'Inside leg',unit:'cm',min:30,max:130,ruHelp:'Измерьте по внутренней стороне ноги от паха до пола, босиком. Для готовой вещи длину согласуем отдельно.',enHelp:'Measure barefoot from the crotch to the floor along the inside leg. Garment length is agreed separately.'},
+} as const;
+export type MeasurementKey = keyof typeof measurements;
+export const measurementKeys = Object.keys(measurements) as MeasurementKey[];

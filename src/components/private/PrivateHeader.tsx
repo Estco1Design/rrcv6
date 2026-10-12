@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useLanguage } from '@/i18n';
-import { markPublicExit } from '@/lib/private-session';
+
 
 /**
  * Приватный header — отдельный от публичного.
@@ -31,7 +31,7 @@ export function PrivateHeader() {
           href="/private/home"
           className="font-mono text-[11px] uppercase tracking-[0.3em] text-white transition-opacity duration-300 hover:opacity-70"
         >
-          RRC&nbsp;PRIVATE
+          {language === 'ru' ? 'ЗАКРЫТЫЙ УРОВЕНЬ' : 'CLOSED LEVEL'}
         </Link>
 
         {/* Правая часть: статус + выход */}
@@ -49,14 +49,14 @@ export function PrivateHeader() {
             onClick={async () => {
               setBusy(true); setError(false);
               try {
-                const response = await fetch('/api/private-access/logout', {method: 'POST'});
+                const response = await fetch('/api/account/logout', {method: 'POST',headers:{'Content-Type':'application/json'},body:'{}'});
                 if (!response.ok) throw new Error('Logout failed');
-                markPublicExit(); router.push('/'); router.refresh();
+                router.push('/'); router.refresh();
               } catch { setError(true); } finally { setBusy(false); }
             }}
             className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/60 transition-colors duration-300 hover:text-white focus-visible:text-white"
           >
-            {busy ? "…" : language === "ru" ? "ВЫЙТИ" : "EXIT"}
+            {busy ? "…" : language === "ru" ? "ВЫЙТИ ИЗ АККАУНТА" : "SIGN OUT"}
           </button>
           {error && <span role="alert" className="text-xs text-white/60">{language === 'ru' ? 'Не удалось выйти. Повторите.' : 'Could not sign out. Try again.'}</span>}
         </div>

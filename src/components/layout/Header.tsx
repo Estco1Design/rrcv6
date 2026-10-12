@@ -35,7 +35,8 @@ export function Header() {
     { label: t.navigation.shop, href: "/shop" },
     { label: t.navigation.collections, href: "/collections" },
     { label: t.navigation.about, href: "/about" },
-    { label: language === 'ru' ? 'ЛИЧНЫЙ АРХИВ' : 'PERSONAL ARCHIVE', href: "/account" },
+    { label: language === 'ru' ? 'ЛИЧНЫЙ КАБИНЕТ' : 'PERSONAL ACCOUNT', href: "/account" },
+    { label: language === 'ru' ? 'ЗАКРЫТЫЙ УРОВЕНЬ' : 'CLOSED LEVEL', href: "/access" },
   ];
 
   useEffect(() => {

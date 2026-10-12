@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {measurements} from './measurements';
 export const interestOptions = [
  {id:'avantgarde',ru:'Авангард',en:'Avant-garde'}, {id:'streetwear',ru:'Стритвир',en:'Streetwear'},
  {id:'tailoring',ru:'Индивидуальный крой',en:'Tailoring'}, {id:'minimal',ru:'Минимализм',en:'Minimalism'},
@@ -12,7 +13,7 @@ export const profileSchema=z.object({
  preferredSize:z.enum(['','1','2','3','ONE SIZE']).default(''),
  fit:z.enum(['regular','fitted','oversize']).default('regular'),
  interests:z.array(z.enum(['avantgarde','streetwear','tailoring','minimal','sport','dark'])).max(6).default([]),
- measurements:z.object({height:measurement(100,230),chest:measurement(40,200),waist:measurement(35,200),hips:measurement(40,220),shoulder:measurement(20,80),sleeve:measurement(10,110),inseam:measurement(30,130)}).default({height:null,chest:null,waist:null,hips:null,shoulder:null,sleeve:null,inseam:null}),
+ measurements:z.object({height:measurement(measurements.height.min,measurements.height.max),weight:measurement(measurements.weight.min,measurements.weight.max),neck:measurement(measurements.neck.min,measurements.neck.max),chest:measurement(measurements.chest.min,measurements.chest.max),waist:measurement(measurements.waist.min,measurements.waist.max),hips:measurement(measurements.hips.min,measurements.hips.max),shoulder:measurement(measurements.shoulder.min,measurements.shoulder.max),sleeve:measurement(measurements.sleeve.min,measurements.sleeve.max),upperArm:measurement(measurements.upperArm.min,measurements.upperArm.max),thigh:measurement(measurements.thigh.min,measurements.thigh.max),calf:measurement(measurements.calf.min,measurements.calf.max),inseam:measurement(measurements.inseam.min,measurements.inseam.max)}).strict().default({height:null,weight:null,neck:null,chest:null,waist:null,hips:null,shoulder:null,sleeve:null,upperArm:null,thigh:null,calf:null,inseam:null}),
  note:z.string().trim().max(500).default(''),
  shareWithTeam:z.boolean().default(false),
 }).strict();
