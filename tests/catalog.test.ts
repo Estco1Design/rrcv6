@@ -4,7 +4,6 @@ import {cartTotals, effectivePrice} from '../src/lib/catalog-utils';
 import {restoreCart, useCartStore} from '../src/store/cart';
 import {getAllProducts} from '../src/lib/products';
 import {buildOrderRequest} from '../src/lib/order-request';
-import {createPrivateToken, verifyPrivateToken} from '../src/lib/private-token';
 import type {CartItem} from '../src/lib/schemas';
 const leggings = getAllProducts().find(p => p.slug === 'rrc-high-waist-flared-leggings')!;
 const variant = (index: number): CartItem => ({id: leggings.id,productId: leggings.id,slug:leggings.slug,variantId:`${leggings.id}-${leggings.colors[index].name}-default`,name:leggings.name,price:leggings.price,image:leggings.colors[index].images[0],size:null,color:leggings.colors[index].name,quantity:1});
@@ -34,11 +33,6 @@ test('a request includes only the supplied selection and does not invent prices'
  const message=buildOrderRequest([{...variant(1),price:null}],'ru','Даня','Москва','Рост 180','https://rrc.example');
  assert(message.includes('Чёрный'));assert(!message.includes('Кислотный'));assert(!message.includes('500'));assert(message.includes('/product/rrc-high-waist-flared-leggings'));assert(message.includes('Рост 180'));
 });
-test('private sessions reject forged, altered, expired and unconfigured tokens',async()=>{
- const previous=process.env.RRC_PRIVATE_SESSION_SECRET;process.env.RRC_PRIVATE_SESSION_SECRET='x'.repeat(64);
- try{const token=await createPrivateToken();assert.equal(await verifyPrivateToken(token),true);assert.equal(await verifyPrivateToken('1'),false);assert.equal(await verifyPrivateToken(token.slice(0,-4)+'aaaa'),false);assert.equal(await verifyPrivateToken('1.'+token.split('.').slice(1).join('.')),false);process.env.RRC_PRIVATE_SESSION_SECRET='';assert.equal(await verifyPrivateToken(token),false);}finally{if(previous===undefined)delete process.env.RRC_PRIVATE_SESSION_SECRET;else process.env.RRC_PRIVATE_SESSION_SECRET=previous;}
-});
-
 // Public Host can differ from Next's internal request hostname.
 test('same-origin checks allow the public host and reject foreign or missing origins', async () => {
  const {sameOrigin} = await import('../src/lib/request-security');
@@ -61,15 +55,15 @@ test('hidden products never leak into public routes, search, collections or feat
  for(const section of ['current','objects','archive'] as const)assert(!getProductsBySection(section).some(p=>p.catalogStatus==='hidden'));
 });
 
-test('local setup creates a secret and estco without overwriting existing settings',async()=>{
+test('local setup enables accounts and preserves existing settings',async()=>{
  const fs=await import('node:fs');const os=await import('node:os');const path=await import('node:path');const {spawnSync}=await import('node:child_process');
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'rrc-setup-'));const script=path.resolve('scripts/setup-local.mjs');
  try{
   assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);
   const file=path.join(dir,'.env.local');const initial=fs.readFileSync(file,'utf8');
-  assert.match(initial,/RRC_PRIVATE_CODES=estco/);assert.match(initial,/RRC_PRIVATE_SESSION_SECRET=[a-f0-9]{64}/);
+  assert.match(initial,/RRC_ACCOUNT_SIGNUPS=1/);assert.match(initial,/RRC_ACCOUNT_ADMIN_TOKEN=[a-f0-9]{64}/);assert(!initial.includes('RRC_PRIVATE_CODES'));
   assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);assert.equal(fs.readFileSync(file,'utf8'),initial);
-  fs.writeFileSync(file,initial.replace('RRC_PRIVATE_CODES=estco','RRC_PRIVATE_CODES=my-custom-code')+'NEXT_PUBLIC_RRC_TELEGRAM=existing_account\n');
+  fs.writeFileSync(file,initial.replace('RRC_ACCOUNT_SIGNUPS=1','RRC_ACCOUNT_SIGNUPS=0')+'NEXT_PUBLIC_RRC_TELEGRAM=existing_account\n');
   const custom=fs.readFileSync(file,'utf8');assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);assert.equal(fs.readFileSync(file,'utf8'),custom);
  }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });

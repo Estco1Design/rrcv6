@@ -14,7 +14,8 @@ export function sameOrigin(req: NextRequest) {
 const attempts = new Map<string, {count: number; expires: number}>();
 export function allowAttempt(req: NextRequest) {
   const now = Date.now();
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  // Untrusted forwarding headers must not allow clients to reset the login attempt budget.
+  const ip = process.env.RRC_TRUST_PROXY === '1' ? (req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown') : 'direct';
   const record = attempts.get(ip);
   if (!record || record.expires <= now) {
     if (attempts.size >= 1000) { for (const [key, value] of attempts) if (value.expires <= now) attempts.delete(key); if (attempts.size >= 1000) return false; }

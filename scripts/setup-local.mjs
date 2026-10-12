@@ -11,11 +11,9 @@ function setMissing(key,value,valid=v=>!!v) {
  const line=`${key}=${value}`;
  text=match?text.replace(expression,line):`${text.endsWith('\n')?text:text+'\n'}${line}\n`;changed=true;
 }
-setMissing('RRC_PRIVATE_SESSION_SECRET',randomBytes(32).toString('hex'),v=>v.length>=32);
-setMissing('RRC_PRIVATE_CODES','estco');
 setMissing('NEXT_PUBLIC_RRC_TELEGRAM','rrc_support');
 setMissing('NEXT_PUBLIC_SITE_URL','https://richrussiancommunity.com');
 setMissing('RRC_ACCOUNT_SIGNUPS','1',v=>v==='0'||v==='1');
 setMissing('RRC_ACCOUNT_ADMIN_TOKEN',randomBytes(32).toString('hex'),v=>v.length>=32);
 if(changed)writeFileSync(path,text,{mode:0o600});
-console.log('Локальный PRIVATE настроен в .env.local. При первой настройке код: estco. Ранее заданные коды сохранены.');
+console.log('Личный кабинет настроен в .env.local. Существующие настройки сохранены. Закрытый уровень доступен после входа в аккаунт.');

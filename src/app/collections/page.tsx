@@ -58,6 +58,7 @@ export default function CollectionsPage() {
                   src={collection.image || "/images/product-placeholder.svg"}
                   alt={collectionNames[collection.id]?.[language] || collection.name}
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={index===0}
                 />
               </Link>
 

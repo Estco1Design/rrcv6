@@ -36,3 +36,22 @@ test('registration requires consent and profile rejects injected ownership / uns
 test('explicit signup gate closes registration even in development',()=>{
  const previous=process.env.RRC_ACCOUNT_SIGNUPS;try{process.env.RRC_ACCOUNT_SIGNUPS='0';assert.equal(signupOpen(),false);process.env.RRC_ACCOUNT_SIGNUPS='1';assert.equal(signupOpen(),true)}finally{if(previous===undefined)delete process.env.RRC_ACCOUNT_SIGNUPS;else process.env.RRC_ACCOUNT_SIGNUPS=previous}
 });
+
+test('existing fit profiles gain optional measurements and reject unsafe values',()=>{
+ const legacy={height:180,chest:95,waist:78,hips:98,shoulder:44,sleeve:62,inseam:80};
+ const profile=profileSchema.parse({measurements:legacy});
+ assert.equal(profile.measurements.neck,null);assert.equal(profile.measurements.weight,null);assert.equal(profile.measurements.chest,95);
+ assert.equal(profileSchema.safeParse({measurements:{...legacy,weight:-1}}).success,false);
+ assert.equal(profileSchema.safeParse({measurements:{...legacy,neck:300}}).success,false);
+ assert.equal(profileSchema.safeParse({measurements:{...legacy,owner:'other'}}).success,false);
+});
+test('member access ends after logout and saved new measurements survive reopening the database',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'rrc-member-'));const file=join(dir,'users.sqlite');let db=new Accounts(file);
+ try{
+  const member=await db.register('member','safe-password-123');
+  db.save(member.user.id,{...emptyProfile(),measurements:{...emptyProfile().measurements,neck:38,weight:72,thigh:55}});
+  db.close();db=new Accounts(file);
+  assert.equal(db.current(member.token)?.profile.measurements.neck,38);assert.equal(db.current(member.token)?.profile.measurements.weight,72);
+  assert.equal(db.current('f'.repeat(64)),null);db.logout(member.token);assert.equal(db.current(member.token),null);
+ }finally{db.close();rmSync(dir,{recursive:true,force:true})}
+});
