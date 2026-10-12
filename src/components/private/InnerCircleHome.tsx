@@ -1,49 +1,13 @@
-"use client";
-import Link from "next/link";
-import { useLanguage } from "@/i18n";
-import { privateSections } from "@/config/private-content";
-export function InnerCircleHome() {
-  const { language } = useLanguage();
-  const ru = language === "ru";
-  return (
-    <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-24">
-      <p className="text-[10px] tracking-[.3em] text-white/40 mb-6">
-        RRC / INNER CIRCLE
-      </p>
-      <h1 className="font-display text-[clamp(30px,6vw,72px)] leading-tight">
-        {ru ? "Внутренний круг" : "Inner Circle"}
-      </h1>
-      <p className="max-w-xl mt-7 text-sm leading-relaxed text-white/60">
-        {ru
-          ? "Ближе к процессу. Здесь собираем будущие релизы, отдельные дропы и разговор о вашей вещи — от первого силуэта до ухода за ней."
-          : "Closer to the process. Future releases, separate drops and a conversation about your piece — from the first silhouette to its care."}
-      </p>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
-        {privateSections.map((s, i) => (
-          <Link
-            href={`/private/${s.slug}`}
-            key={s.slug}
-            className="group min-h-48 border border-white/15 p-6 hover:border-white/40 transition-colors"
-          >
-            <span className="text-[10px] text-white/35">
-              0{i + 1} / INNER CIRCLE
-            </span>
-            <h2 className="font-display text-xl mt-7">{ru ? s.ru : s.en}</h2>
-            <p className="mt-4 text-xs leading-relaxed text-white/50">
-              {ru ? s.description : "Explore this part of the RRC process."}
-            </p>
-            <span className="block mt-5 text-white/60">↗</span>
-          </Link>
-        ))}
-      </div>
-      <div className="mt-12 border-t border-white/10 pt-6 text-xs leading-relaxed text-white/50">
-        {ru
-          ? "Кабинет и Внутренний круг независимы. Если хотите сохранить мерки и предпочтения, создайте профиль отдельно."
-          : "Your account and Inner Circle are independent. Create a separate profile to save measurements and preferences."}{" "}
-        <Link href="/account" className="underline text-white">
-          {ru ? "Личный кабинет" : "Personal account"} ↗
-        </Link>
-      </div>
-    </section>
-  );
+'use client';
+import Link from 'next/link';
+import {useLanguage} from '@/i18n';
+import {privateSections,privatePrivileges} from '@/config/private-content';
+export function InnerCircleHome(){
+ const {language}=useLanguage(),ru=language==='ru';
+ return <section className="max-w-5xl mx-auto px-6 sm:px-10 py-16 sm:py-24">
+  <h1 className="font-display font-light text-2xl sm:text-4xl tracking-[.04em]">PRIVATE ACCESS</h1>
+  <p className="mt-6 max-w-lg text-xs sm:text-sm leading-relaxed text-white/45">{ru?'Закрытая сторона RRC. Процесс, люди и вещи, которые не обязаны попадать в открытую ленту.':'The private side of RRC. Process, people and pieces beyond the public feed.'}</p>
+  <nav aria-label={ru?'Разделы PRIVATE ACCESS':'PRIVATE ACCESS sections'} className="mt-14 sm:mt-20">{privateSections.map(s=><Link key={s.slug} href={`/private/${s.slug}`} className="group flex min-h-20 items-center justify-between gap-5 border-t border-white/10 py-5 last:border-b"><span className="font-display font-light text-base sm:text-xl">{ru?s.ru:s.en}</span><span aria-hidden="true" className="text-xs text-white/30 transition-transform group-hover:translate-x-1">↗</span></Link>)}</nav>
+  <section className="mt-20 sm:mt-28"><h2 className="font-display font-light text-xl">{ru?'Больше, чем доступ.':'Beyond access.'}</h2><p className="mt-5 max-w-lg text-xs leading-relaxed text-white/40">{ru?'Развиваем закрытое комьюнити бренда. Часть возможностей уже доступна в диалоге с командой; подарки, события и специальные выпуски будем объявлять здесь.':'We are building the brand’s private community. Personal guidance is available through the team; gifts, events and special releases will be announced here.'}</p><div className="mt-10 grid sm:grid-cols-2 gap-x-14 gap-y-9">{privatePrivileges.map(p=><article key={p.id}><h3 className="text-sm text-white/80">{ru?p.ru:p.en}</h3><p className="mt-3 text-xs leading-relaxed text-white/40">{ru?p.descriptionRu:p.descriptionEn}</p></article>)}</div></section>
+ </section>;
 }

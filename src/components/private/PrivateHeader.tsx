@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import {markPublicEntry} from "./PrivateSessionProvider";
 import { useLanguage } from "@/i18n";
 import { privateSections } from "@/config/private-content";
 export function PrivateHeader() {
@@ -11,6 +12,7 @@ export function PrivateHeader() {
   const pathname = usePathname();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(false);
+  if(pathname==='/private')return null;
   return (
     <header
       data-rrc-private-header=""
@@ -22,7 +24,7 @@ export function PrivateHeader() {
             href="/private/home"
             className="text-[10px] sm:text-xs tracking-[.12em] uppercase"
           >
-            RRC / {ru ? "Внутренний круг" : "Inner Circle"}
+            PRIVATE ACCESS
           </Link>
           <button
             disabled={busy}
@@ -35,6 +37,7 @@ export function PrivateHeader() {
                   method: "POST",
                 });
                 if (!response.ok) throw new Error();
+                markPublicEntry();
                 router.push("/");
                 router.refresh();
               } catch {
@@ -49,7 +52,7 @@ export function PrivateHeader() {
         </div>
         <nav
           aria-label={
-            ru ? "Разделы Внутреннего круга" : "Inner Circle navigation"
+            ru ? "Разделы PRIVATE ACCESS" : "PRIVATE ACCESS navigation"
           }
           className="flex gap-6 overflow-x-auto pb-2"
         >

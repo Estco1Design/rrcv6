@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cart";
 import { useFavoritesStore } from "@/store/favorites";
 import { useLanguage } from "@/i18n";
 import { cn } from "@/lib/utils";
+import {usePrivateSession} from '@/components/private/PrivateSessionProvider';
 import {DialogFocus} from '@/components/ui/DialogFocus';
 import { siteConfig, telegramUrl, channelUrl } from '@/config/site';
 import { RemoveScroll } from 'react-remove-scroll';
@@ -21,6 +22,7 @@ interface NavItem {
 
 export function Header() {
   const pathname = usePathname();
+  const {active:privateActive}=usePrivateSession();
   const itemCount = useCartStore(state => state.items.reduce((sum, item) => sum + item.quantity, 0));
   const toggleCart = useCartStore((state) => state.toggleCart);
   const closeCart = useCartStore(state => state.closeCart);
@@ -36,7 +38,7 @@ export function Header() {
     { label: t.navigation.collections, href: "/collections" },
     { label: t.navigation.about, href: "/about" },
     { label: language === 'ru' ? 'ЛИЧНЫЙ КАБИНЕТ' : 'PERSONAL ACCOUNT', href: "/account" },
-    { label: language === 'ru' ? 'ВНУТРЕННИЙ КРУГ' : 'INNER CIRCLE', href: "/access" },
+    ...(privateActive?[{label:'PRIVATE ACCESS',href:'/private/home'}]:[]),
   ];
 
   useEffect(() => {
@@ -196,22 +198,14 @@ export function Header() {
               </button>
             </div>
 
-            {/* Brand in mobile menu */}
-            <div className="mb-8 text-center">
-              <h2 className="font-mono text-sm font-light uppercase tracking-[0.2em] text-rrc-white">
-                RICHRUSSIANCOMMUNITY
-              </h2>
-              <p className="text-t-micro text-rrc-off mt-2">EST. 2026</p>
-            </div>
-
             {/* Navigation Links */}
-            <nav className="flex-1 flex flex-col justify-center gap-4">
+            <nav className="flex-1 flex flex-col justify-center gap-2">
               {navItems.map((item, index) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="font-display text-xl md:text-2xl font-light uppercase tracking-wide text-rrc-white hover:text-rrc-silver transition-colors py-3 border-b border-rrc-line-soft"
+                  className="font-display text-base md:text-lg font-light uppercase tracking-wide text-rrc-white hover:text-rrc-silver transition-colors py-3 border-b border-rrc-line-soft"
                 >
                   {item.label}
                 </Link>

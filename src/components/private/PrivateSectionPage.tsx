@@ -32,7 +32,7 @@ export function PrivateSectionPage({ section }: { section: PrivateSection }) {
   return (
     <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
       <p className="text-[10px] tracking-[.3em] text-white/40 mb-5">
-        RRC / INNER CIRCLE
+        PRIVATE ACCESS
       </p>
       <h1 className="font-display text-3xl sm:text-5xl">
         {ru ? info.ru : info.en}
@@ -43,10 +43,10 @@ export function PrivateSectionPage({ section }: { section: PrivateSection }) {
             {ru
               ? section === "early-access"
                 ? "Первый взгляд на будущие изделия: процесс, детали и фотографии из цеха."
-                : "Отдельные выпуски для Внутреннего круга. Состав и условия каждого дропа появятся вместе с его публикацией."
+                : "Отдельные выпуски для PRIVATE ACCESS. Состав и условия каждого дропа появятся вместе с его публикацией."
               : section === "early-access"
                 ? "A first look at future pieces: the process, details and workshop photographs."
-                : "Separate releases for Inner Circle. Each publication will include its actual terms."}
+                : "Separate releases for PRIVATE ACCESS. Each publication will include its actual terms."}
           </p>
           {!releases.length ? (
             <div className="mt-10 border border-white/15 p-8 sm:p-12">
@@ -60,7 +60,7 @@ export function PrivateSectionPage({ section }: { section: PrivateSection }) {
               </h2>
               <p className="text-sm max-w-xl leading-relaxed mt-4 text-white/50">
                 {ru
-                  ? "Добавим реальные кадры из цеха после съёмки и утверждения. Даты, наличие и условия сообщим вместе с релизом. Здесь будут только выпуски, подготовленные для круга."
+                  ? "Добавим реальные кадры из цеха после съёмки и утверждения. Даты, наличие и условия сообщим вместе с релизом. Здесь будут только выпуски, подготовленные для PRIVATE ACCESS."
                   : "Real workshop photographs will be added after the shoot and approval. Dates, availability and terms will come with each release. This space is reserved for releases prepared for the circle."}
               </p>
             </div>

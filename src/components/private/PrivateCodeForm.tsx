@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {markPrivateEntry} from "./PrivateSessionProvider";
 import { useLanguage } from "@/i18n";
 export function PrivateCodeForm({
   onSuccess,
-  path = "/private/home",
+  path = "/private",
   ru: ruOverride,
   variant = "standalone",
 }: {
@@ -24,10 +25,10 @@ export function PrivateCodeForm({
       {variant === "standalone" && (
         <>
           <p className="text-[10px] tracking-[.3em] text-rrc-off mb-4">
-            RRC / INNER CIRCLE
+            PRIVATE ACCESS
           </p>
           <h1 className="font-display text-2xl sm:text-3xl mb-5">
-            {ru ? "Внутренний круг" : "Inner Circle"}
+            PRIVATE ACCESS
           </h1>
           <p className="text-sm leading-relaxed text-rrc-off mb-8">
             {ru
@@ -65,8 +66,9 @@ export function PrivateCodeForm({
               return;
             }
             setCode("");
-            onSuccess?.();
-            router.push(path.startsWith("/private/") ? path : "/private/home");
+            markPrivateEntry();
+                onSuccess?.();
+            router.push(path==='/private'||path.startsWith("/private/") ? path : "/private");
             router.refresh();
           } catch {
             setError(
@@ -102,8 +104,8 @@ export function PrivateCodeForm({
               ? "Проверяем…"
               : "Checking…"
             : ru
-              ? "Войти во Внутренний круг"
-              : "Enter Inner Circle"}
+              ? "Войти"
+              : "Enter"}
         </button>
         {error && (
           <p role="alert" className="text-xs text-rrc-off">

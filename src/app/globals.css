@@ -524,3 +524,10 @@ input, select, textarea { scroll-margin-top:120px; }
 #main-content { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
 @media(min-width:768px) { #main-content { padding-bottom:0; } }
 @media(prefers-reduced-motion:reduce) { .rrc-intro-entry { transition:none; } html { scroll-behavior:auto!important; } }
+
+/* Quiet navigation feedback; no whole-page displacement or decorative badges. */
+a,button { -webkit-tap-highlight-color:transparent; }
+a:active,button:not(:disabled):active { opacity:.68; }
+#main-content { padding-bottom:calc(54px + env(safe-area-inset-bottom)); }
+@media(min-width:768px) { #main-content { padding-bottom:0; } }
+@media(prefers-reduced-motion:no-preference) { a,button { transition-property:color,background-color,border-color,opacity; transition-duration:180ms; } }
