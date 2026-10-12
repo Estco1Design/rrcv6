@@ -16,3 +16,10 @@
 | supabase-postgres-best-practices | https://github.com/supabase/agent-skills/tree/c9be0e931b7930f7d02126d04774d904c381e7d7/skills/supabase-postgres-best-practices | `c9be0e931b7930f7d02126d04774d904c381e7d7` |
 
 Better Auth и Supabase установлены как навыки. Текущий кабинет использует существующий SQLite и серверные сессии; миграция на эти сервисы не выполнялась.
+
+## Дополнительные навыки для 3D и анимации
+
+- https://github.com/CloudAI-X/threejs-skills.git, commit `b1c623076c661fc9b03dac19292e825a5d106823`.
+- https://github.com/remotion-dev/skills.git, commit `7ba4dcf8ebe1626b00baa41e1f2478113719b60b`.
+
+Three.js: fundamentals, geometry, materials, lighting, animation, interaction, loaders. Remotion: router и встроенные references. Интерактивный сайт использует Three.js/Motion; Remotion не добавлен в браузерный bundle.

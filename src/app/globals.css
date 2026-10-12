@@ -516,3 +516,11 @@ img, video, canvas {
 select { background-color: #0c0b0c; color: #edeae4; }
 button:focus-visible, a:focus-visible { outline:2px solid #c9a5ac; outline-offset:4px; }
 input, select, textarea { scroll-margin-top:120px; }
+
+/* Direct manipulation and stable mobile navigation, quiet couture surfaces. */
+.rrc-fit-viewer { scroll-margin-top: 100px; }
+.rrc-fit-viewer [data-body-model] { scroll-margin-top: 120px; }
+.rrc-intro-entry { transition: background-color .25s ease,border-color .25s ease; }
+#main-content { padding-bottom:calc(66px + env(safe-area-inset-bottom)); }
+@media(min-width:768px) { #main-content { padding-bottom:0; } }
+@media(prefers-reduced-motion:reduce) { .rrc-intro-entry { transition:none; } html { scroll-behavior:auto!important; } }

@@ -15,5 +15,7 @@ setMissing('NEXT_PUBLIC_RRC_TELEGRAM','rrc_support');
 setMissing('NEXT_PUBLIC_SITE_URL','https://richrussiancommunity.com');
 setMissing('RRC_ACCOUNT_SIGNUPS','1',v=>v==='0'||v==='1');
 setMissing('RRC_ACCOUNT_ADMIN_TOKEN',randomBytes(32).toString('hex'),v=>v.length>=32);
+setMissing('RRC_PRIVATE_CODES','ESTCO');
+setMissing('RRC_PRIVATE_DB_PATH','var/private.sqlite');
 if(changed)writeFileSync(path,text,{mode:0o600});
-console.log('Личный кабинет настроен в .env.local. Существующие настройки сохранены. Закрытый уровень доступен после входа в аккаунт.');
+console.log('Личный кабинет настроен в .env.local. Существующие настройки сохранены. Внутренний круг настроен отдельно, вход по серверному коду.');

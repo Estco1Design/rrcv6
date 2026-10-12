@@ -19,7 +19,7 @@ if(!existsSync(resolve(output,'server.js')))throw new Error('Production build is
 // Next standalone intentionally omits these assets. Refresh generated copies after each build.
 cpSync(resolve(root,'public'),resolve(output,'public'),{recursive:true});
 cpSync(resolve(root,'.next/static'),resolve(output,'.next/static'),{recursive:true});
-const child=spawn(process.execPath,[resolve(output,'server.js')],{cwd:root,stdio:'inherit',env:{...process.env,NODE_ENV:'production',PORT:port,HOSTNAME:host,RRC_ACCOUNT_DB_PATH:resolve(root,process.env.RRC_ACCOUNT_DB_PATH||'var/accounts.sqlite')}});
+const child=spawn(process.execPath,[resolve(output,'server.js')],{cwd:root,stdio:'inherit',env:{...process.env,NODE_ENV:'production',PORT:port,HOSTNAME:host,RRC_ACCOUNT_DB_PATH:resolve(root,process.env.RRC_ACCOUNT_DB_PATH||'var/accounts.sqlite'),RRC_PRIVATE_DB_PATH:resolve(root,process.env.RRC_PRIVATE_DB_PATH||'var/private.sqlite'),RRC_PRIVATE_MEDIA_PATH:resolve(root,process.env.RRC_PRIVATE_MEDIA_PATH||'var/private-media')}});
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>child.kill(signal));
 child.on('error',error=>{console.error(error.message);process.exitCode=1;});
 child.on('exit',(code,signal)=>{process.exitCode=code??(signal?1:0);});
