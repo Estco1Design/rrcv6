@@ -36,7 +36,7 @@ export function Header() {
     { label: t.navigation.collections, href: "/collections" },
     { label: t.navigation.about, href: "/about" },
     { label: language === 'ru' ? 'ЛИЧНЫЙ КАБИНЕТ' : 'PERSONAL ACCOUNT', href: "/account" },
-    { label: language === 'ru' ? 'ЗАКРЫТЫЙ УРОВЕНЬ' : 'CLOSED LEVEL', href: "/access" },
+    { label: language === 'ru' ? 'ВНУТРЕННИЙ КРУГ' : 'INNER CIRCLE', href: "/access" },
   ];
 
   useEffect(() => {

@@ -1,65 +1,85 @@
-'use client';
-
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useLanguage } from '@/i18n';
-
-
-/**
- * Приватный header — отдельный от публичного.
- * Минимализм: тонкая нижняя линия, uppercase tracking, никаких карточек.
- *
- * RRC PRIVATE   — идентичность зоны
- * MEMBER ACCESS — статус (декоративный индикатор)
- * EXIT          — возврат на обычный сайт (публичный путь)
- */
+"use client";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useLanguage } from "@/i18n";
+import { privateSections } from "@/config/private-content";
 export function PrivateHeader() {
-  const router = useRouter();
   const { language } = useLanguage();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
-
+  const ru = language === "ru";
+  const router = useRouter();
+  const pathname = usePathname();
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState(false);
   return (
     <header
       data-rrc-private-header=""
-      className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur-sm"
+      className="sticky top-0 z-50 border-b border-white/10 bg-black/95 backdrop-blur"
     >
-      <div className="mx-auto flex h-14 max-w-[1400px] items-center justify-between px-4 sm:h-16 sm:px-8">
-        {/* Идентичность private-зоны */}
-        <Link
-          href="/private/home"
-          className="font-mono text-[11px] uppercase tracking-[0.3em] text-white transition-opacity duration-300 hover:opacity-70"
-        >
-          {language === 'ru' ? 'ЗАКРЫТЫЙ УРОВЕНЬ' : 'CLOSED LEVEL'}
-        </Link>
-
-        {/* Правая часть: статус + выход */}
-        <div className="flex items-center gap-5 sm:gap-8">
-          <span
-            aria-hidden="true"
-            className="hidden items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-white/45 sm:flex"
+      <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <div className="min-h-16 flex items-center justify-between gap-4">
+          <Link
+            href="/private/home"
+            className="text-[10px] sm:text-xs tracking-[.12em] uppercase"
           >
-            <span className="inline-block h-[5px] w-[5px] rounded-full bg-white/70" />
-            MEMBER&nbsp;ACCESS
-          </span>
+            RRC / {ru ? "Внутренний круг" : "Inner Circle"}
+          </Link>
           <button
-            type="button"
             disabled={busy}
+            className="text-[10px] min-h-11 shrink-0 text-white/60 hover:text-white"
             onClick={async () => {
-              setBusy(true); setError(false);
+              setBusy(true);
+              setError(false);
               try {
-                const response = await fetch('/api/account/logout', {method: 'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-                if (!response.ok) throw new Error('Logout failed');
-                router.push('/'); router.refresh();
-              } catch { setError(true); } finally { setBusy(false); }
+                const response = await fetch("/api/private-access/logout", {
+                  method: "POST",
+                });
+                if (!response.ok) throw new Error();
+                router.push("/");
+                router.refresh();
+              } catch {
+                setError(true);
+              } finally {
+                setBusy(false);
+              }
             }}
-            className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/60 transition-colors duration-300 hover:text-white focus-visible:text-white"
           >
-            {busy ? "…" : language === "ru" ? "ВЫЙТИ ИЗ АККАУНТА" : "SIGN OUT"}
+            {busy ? "…" : ru ? "Выйти" : "Exit"} ↗
           </button>
-          {error && <span role="alert" className="text-xs text-white/60">{language === 'ru' ? 'Не удалось выйти. Повторите.' : 'Could not sign out. Try again.'}</span>}
         </div>
+        <nav
+          aria-label={
+            ru ? "Разделы Внутреннего круга" : "Inner Circle navigation"
+          }
+          className="flex gap-6 overflow-x-auto pb-2"
+        >
+          <Link
+            href="/private/home"
+            aria-current={pathname === "/private/home" ? "page" : undefined}
+            className="min-h-10 inline-flex items-center shrink-0 text-[10px] uppercase text-white/60 aria-[current=page]:text-white"
+          >
+            {ru ? "Главная" : "Home"}
+          </Link>
+          {privateSections.map((section) => (
+            <Link
+              key={section.slug}
+              href={`/private/${section.slug}`}
+              aria-current={
+                pathname === `/private/${section.slug}` ? "page" : undefined
+              }
+              className="min-h-10 inline-flex items-center shrink-0 text-[10px] uppercase text-white/60 aria-[current=page]:text-white"
+            >
+              {ru ? section.ru : section.en}
+            </Link>
+          ))}
+        </nav>
+        {error && (
+          <p role="alert" className="text-xs py-2">
+            {ru
+              ? "Не удалось выйти. Повторите."
+              : "Could not sign out. Try again."}
+          </p>
+        )}
       </div>
     </header>
   );

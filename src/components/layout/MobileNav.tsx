@@ -1,103 +1,88 @@
 "use client";
-
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { House, Grid2X2, Orbit, UserRound, ShoppingBag } from "lucide-react";
+import { useLanguage } from "@/i18n";
 import { useCartStore } from "@/store/cart";
 import { useFavoritesStore } from "@/store/favorites";
-
 export function MobileNav() {
-  const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
-  
-  // Get overlay states from stores
-  const isCartOpen = useCartStore((state) => state.isOpen);
-  const isFavoritesOpen = useFavoritesStore((state) => state.isOpen);
-  
-  // Check if we're on a page that should hide the nav
-  const isShopPage = pathname === "/shop" || pathname?.startsWith("/shop/") || pathname?.startsWith("/collections/");
-  const isHomePage = pathname === "/";
-  const isCartPage = pathname === "/cart" || pathname === "/favorites";
-  
-  // Determine active states
-  const activeRRC = isHomePage;
-  const activeSHOP = isShopPage;
-  const activeBAG = isCartPage;
-
-  useEffect(() => {
-    const media=window.matchMedia('(max-width: 767px)');let frame=0;
-    const handleScroll=()=>{if(frame || !media.matches)return;frame=requestAnimationFrame(()=>{const y=window.scrollY;setIsVisible(y<=100 || y<=lastScrollY.current);lastScrollY.current=y;frame=0;});};
-    const sync=()=>{window.removeEventListener('scroll',handleScroll);if(media.matches)window.addEventListener('scroll',handleScroll,{passive:true});else setIsVisible(true);};
-    sync();media.addEventListener('change',sync);
-    return()=>{cancelAnimationFrame(frame);media.removeEventListener('change',sync);window.removeEventListener('scroll',handleScroll);};
-  }, []);
-
-  // Не показывать на определенных страницах или когда открыты оверлеи
-  const hiddenPaths = ["/admin", "/login"];
-  const shouldHide = hiddenPaths.some(path => pathname?.startsWith(path)) 
-    || isCartOpen 
-    || isFavoritesOpen;
-    
-  if (shouldHide) {
-    return null;
-  }
-
-  // Показывать только на мобильных
+  const pathname = usePathname(),
+    { language } = useLanguage(),
+    ru = language === "ru";
+  const cartOpen = useCartStore((s) => s.isOpen),
+    favoritesOpen = useFavoritesStore((s) => s.isOpen),
+    count = useCartStore((s) =>
+      s.items.reduce((n, item) => n + item.quantity, 0),
+    );
+  if (cartOpen || favoritesOpen || pathname?.startsWith("/admin")) return null;
+  const links = [
+    {
+      href: "/",
+      label: ru ? "Главная" : "Home",
+      icon: House,
+      active: pathname === "/",
+    },
+    {
+      href: "/shop",
+      label: ru ? "Каталог" : "Shop",
+      icon: Grid2X2,
+      active:
+        pathname.startsWith("/shop") || pathname.startsWith("/collections"),
+    },
+    {
+      href: "/access",
+      label: ru ? "Круг" : "Circle",
+      icon: Orbit,
+      active: pathname === "/access",
+    },
+    {
+      href: "/account",
+      label: ru ? "Кабинет" : "Account",
+      icon: UserRound,
+      active: pathname === "/account",
+    },
+    {
+      href: "/cart",
+      label: ru ? "Корзина" : "Bag",
+      icon: ShoppingBag,
+      active: pathname === "/cart",
+    },
+  ];
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.nav
-          className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
-          {/* Background с минимальной прозрачностью */}
-          <div className="absolute inset-0 bg-rrc-black/95" />
-          
-          {/* Border сверху */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-rrc-line/30" />
-          
-          {/* Navigation items */}
-          <div className="relative flex justify-around items-center h-14 px-4">
-            <Link
-              href="/shop"
-              className={cn(
-                "text-[10px] uppercase tracking-[0.2em] transition-colors duration-300",
-                activeSHOP ? "text-rrc-white" : "text-rrc-off hover:text-rrc-silver"
+    <nav
+      aria-label={ru ? "Основная навигация" : "Main navigation"}
+      className="fixed bottom-0 inset-x-0 z-50 md:hidden border-t border-white/10 bg-[#0a090c]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+    >
+      <div className="grid grid-cols-5">
+        {links.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            className={`relative flex min-h-[66px] min-w-0 flex-col items-center justify-center gap-1.5 px-1 text-[10px] ${item.active ? "text-rrc-white" : "text-rrc-off hover:text-rrc-white"}`}
+          >
+            {item.active && (
+              <span
+                aria-hidden="true"
+                className="absolute top-0 h-[2px] w-7 bg-[#cfa8b3]"
+              />
+            )}
+            <span className="relative">
+              <item.icon
+                className="h-[19px] w-[19px]"
+                strokeWidth={1.35}
+                aria-hidden="true"
+              />
+              {item.href === "/cart" && count > 0 && (
+                <span className="absolute -right-2.5 -top-1.5 min-w-3.5 h-3.5 flex items-center justify-center rounded-full bg-rrc-wine text-white text-[8px]">
+                  {count}
+                </span>
               )}
-            >
-              SHOP
-            </Link>
-            
-            <Link
-              href="/"
-              className={cn(
-                "text-[10px] uppercase tracking-[0.2em] transition-colors duration-300",
-                activeRRC ? "text-rrc-white" : "text-rrc-off hover:text-rrc-silver"
-              )}
-            >
-              RRC
-            </Link>
-            
-            <Link href="/account" className={cn("text-[10px] uppercase tracking-[0.2em] transition-colors", pathname === "/account" ? "text-rrc-white" : "text-rrc-off")}>PROFILE</Link>
-            <Link
-              href="/cart"
-              className={cn(
-                "text-[10px] uppercase tracking-[0.2em] transition-colors duration-300",
-                activeBAG ? "text-rrc-white" : "text-rrc-off hover:text-rrc-silver"
-              )}
-            >
-              BAG
-            </Link>
-          </div>
-        </motion.nav>
-      )}
-    </AnimatePresence>
+            </span>
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+    </nav>
   );
 }

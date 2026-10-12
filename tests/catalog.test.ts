@@ -61,7 +61,7 @@ test('local setup enables accounts and preserves existing settings',async()=>{
  try{
   assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);
   const file=path.join(dir,'.env.local');const initial=fs.readFileSync(file,'utf8');
-  assert.match(initial,/RRC_ACCOUNT_SIGNUPS=1/);assert.match(initial,/RRC_ACCOUNT_ADMIN_TOKEN=[a-f0-9]{64}/);assert(!initial.includes('RRC_PRIVATE_CODES'));
+  assert.match(initial,/RRC_ACCOUNT_SIGNUPS=1/);assert.match(initial,/RRC_ACCOUNT_ADMIN_TOKEN=[a-f0-9]{64}/);assert.match(initial,/RRC_PRIVATE_CODES=ESTCO/);
   assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);assert.equal(fs.readFileSync(file,'utf8'),initial);
   fs.writeFileSync(file,initial.replace('RRC_ACCOUNT_SIGNUPS=1','RRC_ACCOUNT_SIGNUPS=0')+'NEXT_PUBLIC_RRC_TELEGRAM=existing_account\n');
   const custom=fs.readFileSync(file,'utf8');assert.equal(spawnSync(process.execPath,[script],{cwd:dir}).status,0);assert.equal(fs.readFileSync(file,'utf8'),custom);
