@@ -6,6 +6,7 @@ import { DialogFocus } from "@/components/ui/DialogFocus";
 import { PrivateCodeForm } from "@/components/private/PrivateCodeForm";
 import { markPublicEntry } from "@/components/private/PrivateSessionProvider";
 import { usePathname } from "next/navigation";
+import { CutAudio, type CutAudioFiles } from "./cut-audio";
 import { FabricCutScene } from "./FabricCutScene";
 const word = "RICHRUSSIANCOMMUNITY",
   playedKey = "rrc_cut_played";
@@ -18,7 +19,36 @@ export function RrcBootIntro() {
     [mode, setMode] = useState<"entry" | "code">("entry"),
     [reduced, setReduced] = useState(true),
     [ready, setReady] = useState(false),
-    [fallback, setFallback] = useState(false);
+    [fallback, setFallback] = useState(false),
+    [replay, setReplay] = useState(0);
+  const [audioAvailable, setAudioAvailable] = useState(false),
+    [sound, setSound] = useState(false);
+  const audio = useRef<CutAudio>();
+  const [soundPreferred, setSoundPreferred] = useState(false);
+  useEffect(() => {
+    try {
+      setSoundPreferred(localStorage.getItem("rrc_intro_sound") === "on");
+    } catch {}
+    const abort = new AbortController();
+    void fetch("/intro/audio/manifest.json", { signal: abort.signal })
+      .then((r) => r.json())
+      .then((files: CutAudioFiles) => {
+        if (abort.signal.aborted) return;
+        if (
+          ["hinge", "close", "cut", "rustle"].every(
+            (key) => typeof files[key as keyof CutAudioFiles] === "string",
+          )
+        ) {
+          audio.current = new CutAudio(files);
+          setAudioAvailable(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      abort.abort();
+      audio.current?.dispose();
+    };
+  }, []);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (mode === "entry") root.current?.scrollTo(0, 0);
@@ -47,6 +77,7 @@ export function RrcBootIntro() {
   }, []);
   useEffect(() => {
     if (pathname !== "/") {
+      audio.current?.stop();
       setVisible(false);
       return;
     }
@@ -87,6 +118,7 @@ export function RrcBootIntro() {
       /* Optional storage. */
     }
     window.dispatchEvent(new Event("rrc:enter"));
+    audio.current?.stop();
     setVisible(false);
   }, []);
   const enterPublic = useCallback(() => {
@@ -98,6 +130,8 @@ export function RrcBootIntro() {
   }, [close]);
   const skip = useCallback(() => {
     focusAfterFinish.current = true;
+    audio.current?.stop();
+    setSound(false);
     setFallback(true);
     finish();
   }, [finish]);
@@ -165,6 +199,8 @@ export function RrcBootIntro() {
           </div>
           {policyReady && !fallback && (
             <FabricCutScene
+              audio={audio.current}
+              key={replay}
               final={ready}
               onComplete={finish}
               onFailure={failure}
@@ -239,6 +275,69 @@ export function RrcBootIntro() {
               )}
             </AnimatePresence>
           </div>
+          <button
+            type="button"
+            className="rrc-cut-sound"
+            disabled={!audioAvailable || reduced}
+            aria-pressed={sound}
+            title={
+              !audioAvailable
+                ? ru
+                  ? "Записи звука пока не подключены"
+                  : "Recorded audio is not yet available"
+                : soundPreferred && !sound
+                  ? ru
+                    ? "Нажмите для включения сохранённого выбора"
+                    : "Click to enable your saved sound preference"
+                  : undefined
+            }
+            onClick={async () => {
+              if (sound) {
+                audio.current?.stop();
+                setSound(false);
+                setSoundPreferred(false);
+                try {
+                  localStorage.setItem("rrc_intro_sound", "off");
+                } catch {}
+              } else {
+                try {
+                  await audio.current?.enable();
+                  setSound(true);
+                  setSoundPreferred(true);
+                  try {
+                    localStorage.setItem("rrc_intro_sound", "on");
+                  } catch {}
+                  if (ready) {
+                    audio.current?.reset();
+                    setReady(false);
+                    setFallback(false);
+                    setReplay((value) => value + 1);
+                  }
+                } catch {
+                  setSound(false);
+                  audio.current?.stop();
+                }
+              }
+            }}
+          >
+            {ru
+              ? `Звук: ${sound ? "вкл" : "выкл"}`
+              : `Sound: ${sound ? "on" : "off"}`}
+          </button>
+          {ready && !reduced && mode === "entry" && (
+            <button
+              type="button"
+              className="rrc-cut-replay"
+              onClick={() => {
+                audio.current?.reset();
+                setReady(false);
+                setFallback(false);
+                setReplay((value) => value + 1);
+              }}
+            >
+              {ru ? "Повторить" : "Replay"}
+            </button>
+          )}
           {!ready && (
             <button type="button" onClick={skip} className="rrc-cut-skip">
               {ru ? "Пропустить" : "Skip"}

@@ -25,7 +25,7 @@ def mesh(name,verts,faces,mat,parent,bevel=.015):
    uv.data[loop_index].uv=(vertex[axes[0]]*.7+.5,vertex[axes[1]]*.7+.5)
  obj=bpy.data.objects.new(name,data);bpy.context.collection.objects.link(obj);obj.data.materials.append(mat);obj.parent=parent
  if bevel:
-  b=obj.modifiers.new('Soft machined edges','BEVEL');b.width=bevel;b.segments=3
+  b=obj.modifiers.new('Soft machined edges','BEVEL');b.width=bevel;b.segments=6
   b=obj.modifiers.new('Weighted metal normals','WEIGHTED_NORMAL');b.keep_sharp=True
  for p in data.polygons:p.use_smooth=True
  return obj
@@ -38,7 +38,7 @@ def handle(sign,parent):
  for depth in [.14,.195]:
   for inner in [False,True]:
    for i in range(n):
-    a=2*math.pi*i/n;rx=.425 if not inner else .345;ry=.245 if not inner else .173
+    a=2*math.pi*i/n;rx=(.39 if sign>0 else .48) if not inner else (.31 if sign>0 else .395);ry=(.225 if sign>0 else .26) if not inner else (.151 if sign>0 else .185)
     x=rx*math.cos(a);y=ry*math.sin(a)
     verts.append((-.74+x*math.cos(angle)-y*math.sin(angle),sign*.295+x*math.sin(angle)+y*math.cos(angle),depth))
  faces=[]
@@ -47,7 +47,10 @@ def handle(sign,parent):
   faces.extend([(i,j,j+n,i+n),(i+2*n,i+3*n,j+3*n,j+2*n),(i,i+2*n,j+2*n,j),(i+n,j+n,j+3*n,i+3*n)])
  mesh(('Upper' if sign>0 else 'Lower')+' ergonomic handle',verts,faces,body,parent,.02)
  neck=[(-.44,.23),(-.33,.12),(-.08,-.07),(.12,-.055),(.10,.14),(-.07,.14),(-.29,.26),(-.41,.37)]
- outline('Forged neck',[(x,sign*y) for x,y in neck],.162,body,parent,.064,.022)
+ # Chaikin subdivision removes the polygonal corners without changing the common pivot.
+ for _ in range(3):
+  neck=[q for i,a in enumerate(neck) for q in [(a[0]*.75+neck[(i+1)%len(neck)][0]*.25,a[1]*.75+neck[(i+1)%len(neck)][1]*.25),(a[0]*.25+neck[(i+1)%len(neck)][0]*.75,a[1]*.25+neck[(i+1)%len(neck)][1]*.75)]]
+ outline('Forged neck',[(x,sign*y) for x,y in neck],.162,body,parent,.075,.028)
  blade=[(-.055,-.03),(.18,-.047),(1.43,-.018),(1.48,.006),(.55,.146),(.18,.182),(-.055,.09)]
  depth=.155 if sign>0 else -.065
  obj=outline(('Upper' if sign>0 else 'Lower')+'Blade',[(x,sign*y) for x,y in blade],depth,body,parent,.035,.009)

@@ -1,12 +1,15 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { cutFrame, INTRO_DURATION } from "./cut-timeline";
+import type { CutAudio } from "./cut-audio";
 import type { CutScene } from "./create-cut-scene";
 export function FabricCutScene({
   final,
   onComplete,
   onFailure,
+  audio,
 }: {
+  audio?: CutAudio;
   final: boolean;
   onComplete: () => void;
   onFailure: () => void;
@@ -36,6 +39,7 @@ export function FabricCutScene({
     const apply = (seconds: number) => {
       const shot = cutFrame(seconds);
       scene?.render(seconds);
+      audio?.update(seconds);
       dialog?.style.setProperty("--intro-menu", String(shot.menu));
       dialog?.style.setProperty(
         "--intro-reveal",
@@ -44,7 +48,7 @@ export function FabricCutScene({
       element.dataset.state = shot.done ? "complete" : "playing";
     };
     const complete = () => {
-      if (abort.signal.aborted) return;
+      if (abort.signal.aborted || done) return;
       cancelAnimationFrame(frame);
       frame = 0;
       apply(INTRO_DURATION);
@@ -64,26 +68,28 @@ export function FabricCutScene({
     };
     const loadTimeout = window.setTimeout(fail, 8000);
     const tick = (now: number) => {
-      if (done || abort.signal.aborted) return;
+      if (abort.signal.aborted) return;
       if (document.hidden) {
         frame = 0;
         last = 0;
         return;
       }
-      if (last) elapsed += (now - last) / 1000;
+      if (!done && last) elapsed += (now - last) / 1000;
       last = now;
       const fps = element.clientWidth < 768 ? 24 : 30;
       if (now - stamp >= 1000 / fps) {
         apply(elapsed);
         stamp = now - ((now - stamp) % (1000 / fps));
       }
-      if (elapsed >= INTRO_DURATION) {
+      if (!done && elapsed >= INTRO_DURATION) {
         complete();
         return;
       }
-      frame = requestAnimationFrame(tick);
+      frame = !done || scene?.active() ? requestAnimationFrame(tick) : 0;
     };
     const visibility = () => {
+      if (document.hidden) audio?.suspend();
+      else audio?.resume();
       cancelAnimationFrame(frame);
       frame = 0;
       last = 0;
@@ -92,9 +98,26 @@ export function FabricCutScene({
           scene.resize();
           pendingResize = false;
         }
-        if (!done) frame = requestAnimationFrame(tick);
+        if (!done || scene.active()) frame = requestAnimationFrame(tick);
       }
     };
+    const pointer = (event: PointerEvent) => {
+      if (document.hidden || !scene) return;
+      const bounds = element.getBoundingClientRect();
+      const y = (event.clientY - bounds.top) / bounds.height;
+      const menu = (event.target as HTMLElement).closest(".rrc-cut-entries");
+      scene.pointer(
+        (event.clientX - bounds.left) / bounds.width,
+        done && menu ? (y < 0.55 ? 0.3 : 0.75) : y,
+        (menu ? 10 : 20) / bounds.height,
+      );
+      if (!frame) {
+        last = 0;
+        frame = requestAnimationFrame(tick);
+      }
+    };
+    dialog?.addEventListener("pointermove", pointer, { passive: true });
+    dialog?.addEventListener("pointerdown", pointer, { passive: true });
     const contextLost = (event: Event) => {
       event.preventDefault();
       fail();
@@ -128,14 +151,17 @@ export function FabricCutScene({
     return () => {
       window.clearTimeout(loadTimeout);
       abort.abort();
+      audio?.reset();
       cancelAnimationFrame(frame);
       observer?.disconnect();
+      dialog?.removeEventListener("pointermove", pointer);
+      dialog?.removeEventListener("pointerdown", pointer);
       scene?.dispose();
       controller.current = null;
       document.removeEventListener("visibilitychange", visibility);
       element.removeEventListener("webglcontextlost", contextLost, true);
     };
-  }, []);
+  }, [audio]);
   return (
     <div
       ref={host}

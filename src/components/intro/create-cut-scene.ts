@@ -18,7 +18,9 @@ function edgeAt(points: number[], u: number) {
   return THREE.MathUtils.lerp(points[i], points[i + 1], smooth(x - i));
 }
 export type CutScene = {
-  render: (seconds: number) => void;
+  render: (seconds: number, interaction?: number) => void;
+  pointer: (x: number, y: number, strength: number) => void;
+  active: () => boolean;
   resize: () => void;
   dispose: () => void;
 };
@@ -45,7 +47,14 @@ export async function createCutScene(
   const resources: { dispose: () => void }[] = [];
   let disposed = false,
     aspect = 1,
-    last = 0;
+    last = 0,
+    heightPixels = 720;
+  const impulses: { time: number; x: number; y: number; strength: number }[] =
+    [];
+  let pulseTime = -10,
+    pulseX = 0,
+    pulseY = 0,
+    pulseStrength = 0;
   const dispose = () => {
     if (disposed) return;
     disposed = true;
@@ -76,7 +85,13 @@ export async function createCutScene(
       return texture;
     };
     const [intact, twill, brush, gltf] = await Promise.all([
-      textures.loadAsync("/intro/cloth-intact.webp").then(retainTexture),
+      textures
+        .loadAsync(
+          host.clientWidth < 768
+            ? "/intro/wool-albedo-mobile.webp"
+            : "/intro/wool-albedo.webp",
+        )
+        .then(retainTexture),
       textures.loadAsync("/intro/twill-normal.png").then(retainTexture),
       textures.loadAsync("/intro/titanium-normal.png").then(retainTexture),
       new GLTFLoader(manager)
@@ -111,6 +126,7 @@ export async function createCutScene(
       throw new DOMException("Aborted", "AbortError");
     }
     intact.colorSpace = THREE.SRGBColorSpace;
+    intact.wrapS = intact.wrapT = THREE.RepeatWrapping;
     intact.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
     twill.wrapS = twill.wrapT = THREE.RepeatWrapping;
     twill.repeat.set(30, 22);
@@ -147,7 +163,7 @@ export async function createCutScene(
     const ambient = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambient);
     const key = new THREE.DirectionalLight(0xfffaf3, 1.4);
-    key.position.set(-2, 3, 4);
+    key.position.set(-2, 2, 0.65);
     scene.add(key);
     const fill = new THREE.DirectionalLight(0xe8e9ed, 0.3);
     fill.position.set(3, -1, 2);
@@ -156,13 +172,13 @@ export async function createCutScene(
       map: intact,
       normalMap: twill,
       normalScale: new THREE.Vector2(0.07, 0.07),
-      color: 0xd0d0d0,
+      color: 0xffffff,
       roughness: 1,
       metalness: 0,
       ior: 1.1,
       specularIntensity: 0.2,
-      sheen: 0.1,
-      sheenColor: new THREE.Color(0.025, 0.025, 0.025),
+      sheen: 0.65,
+      sheenColor: new THREE.Color(0.3, 0.3, 0.3),
       sheenRoughness: 1,
       envMapIntensity: 0.04,
       side: THREE.DoubleSide,
@@ -184,14 +200,22 @@ export async function createCutScene(
     // This prevents a pre-existing slit or two visibly joined panels at the start.
     const uncutUniform = { value: -0.1 },
       uncutMaterial = cloth.clone();
+    // A separate raw UV varying keeps contact masking independent of texture tiling.
     uncutMaterial.map = intact;
+
     uncutMaterial.onBeforeCompile = (shader) => {
       shader.uniforms.uCut = uncutUniform;
+      shader.vertexShader =
+        "varying float vCutU;\n" +
+        shader.vertexShader.replace(
+          "#include <uv_vertex>",
+          "#include <uv_vertex>\nvCutU = uv.x;",
+        );
       shader.fragmentShader =
-        "uniform float uCut;\n" +
+        "uniform float uCut; varying float vCutU;\n" +
         shader.fragmentShader.replace(
           "#include <map_fragment>",
-          "#include <map_fragment>\nif(vMapUv.x < uCut) discard;",
+          "#include <map_fragment>\nif(vCutU < uCut) discard;",
         );
     };
     uncutMaterial.customProgramCacheKey = () => "rrc-intact-cut-v1";
@@ -260,7 +284,9 @@ export async function createCutScene(
       if (disposed) return;
       const { width, height } = host.getBoundingClientRect();
       if (!width || !height) return;
+      heightPixels = height;
       aspect = width / height;
+      intact.repeat.set(aspect * 3, 3);
       camera.left = -aspect;
       camera.right = aspect;
       camera.updateProjectionMatrix();
@@ -275,7 +301,30 @@ export async function createCutScene(
       renderer.setSize(width, height);
       render(last);
     }
-    function render(seconds: number) {
+    function deformation(x: number, y: number, pinned: number, clock: number) {
+      let displacement = 0;
+      for (const impulse of impulses) {
+        const age = clock - impulse.time;
+        if (age < 0 || age > 1.1) continue;
+        const dx = (x - impulse.x) / Math.max(aspect, 0.5),
+          dy = y - impulse.y;
+        const delay = Math.min(0.15, Math.hypot(dx, dy) * 0.18);
+        const t = Math.max(0, age - delay);
+        const envelope = (1 - Math.exp(-t * 30)) * Math.exp(-t * 6);
+        displacement +=
+          impulse.strength * envelope * Math.exp(-dx * dx * 38 - dy * dy * 28);
+      }
+      return Math.min(18 / heightPixels, displacement) * pinned;
+    }
+    function foldsAt(u: number, v: number, sign: number) {
+      // Spatial folds are geometry, so their normals and illumination follow deformation.
+      const ridge = Math.sin(u * 8.7 + v * 4.2 + sign * 0.8);
+      return (
+        (0.17 * ridge + 0.065 * Math.sin(u * 17.3 - v * 6.1 + sign)) *
+        Math.sin(v * Math.PI)
+      );
+    }
+    function render(seconds: number, interaction = performance.now() / 1000) {
       if (disposed || signal.aborted) return;
       last = seconds;
       const shot = cutFrame(seconds);
@@ -286,9 +335,9 @@ export async function createCutScene(
       host.dataset.renderCount = String(
         Number(host.dataset.renderCount || 0) + 1,
       );
-      ambient.intensity = 0.45 * shot.light;
-      key.intensity = 1.4 * shot.light;
-      fill.intensity = 0.3 * shot.light;
+      ambient.intensity = 0.12 * shot.light;
+      key.intensity = 3.2 * shot.light;
+      fill.intensity = 0.12 * shot.light;
       softKey.intensity = 2 * shot.light;
       cloth.envMapIntensity = 0.04 * shot.light;
       uncutMaterial.envMapIntensity = 0.04 * shot.light;
@@ -299,29 +348,35 @@ export async function createCutScene(
           const { u, v } = coords[i];
           const finalEdge = edgeAt(sign === 1 ? topEdge : bottomEdge, u);
           // Cut is propagated spatially, with a short delayed response behind contact.
-          const finalY=1-2*finalEdge;
+          const finalY = 1 - 2 * finalEdge;
           const opened = cutRelease(shot, u);
           const y = THREE.MathUtils.lerp(
             clothEdge(shot, u, sign, finalY, opened),
             sign * 1.035,
             v,
           );
-          // Large restrained folds, almost flat after settling; edge curls follow tension.
-          const folds =
-            0.014 * Math.sin(u * 11 + v * 8 + sign) * Math.sin(v * Math.PI) +
-            0.01 * Math.sin(u * 22 - v * 9) * Math.sin(v * Math.PI);
+          const restV = (.04 + (sign * 1.035 - .04) * v + 1) / 2;
+          const folds = foldsAt(u, restV, 1);
           const curl =
             0.025 * opened * Math.exp(-v * 14) * (1 - shot.spread * 0.4);
           const currentY = y + settle * Math.sin(u * 7 + v * 3) * v;
+          const displacement = deformation((u * 2 - 1) * aspect, currentY,
+            Math.sin(v * Math.PI) * Math.sin(u * Math.PI), interaction);
           position.setXYZ(
             i,
             (u * 2 - 1) * aspect,
-            currentY,
-            0.018 + folds + curl,
+            currentY + displacement,
+            0.018 +
+              0.1 * opened *
+                Math.exp(
+                  -Math.pow((v - 0.12 - 0.035 * Math.sin(u * 9)) / 0.1, 2),
+                ) +
+              folds +
+              curl +
+              displacement,
           );
-          // Project the shared textile plate across both states. Large folds stay
-          // continuous across the moving cut front; the edge geometry carries the opening.
-          uv.setXY(i, u, (currentY + 1) / 2);
+          // Material UVs follow each panel; lighting is evaluated from deformed normals.
+          uv.setXY(i, u, restV);
         }
         position.needsUpdate = true;
         uv.needsUpdate = true;
@@ -332,10 +387,19 @@ export async function createCutScene(
       if (uncutMesh.visible) {
         for (let i = 0; i < uncutPosition.count; i++) {
           const { u, v } = uncutCoords[i];
-          const fold = 0.008 * Math.sin(u * 9 + v * 8) * Math.sin(v * Math.PI);
+          const fold = foldsAt(u, ((v * 2 - 1) * 1.035 + 1) / 2, 1);
           const currentY =
             (v * 2 - 1) * 1.035 + settle * Math.sin(u * 7 + v * 3);
-          uncutPosition.setXYZ(i, (u * 2 - 1) * aspect, currentY, 0.074 + fold);
+          const displacement = deformation((u * 2 - 1) * aspect, currentY,
+            Math.sin(v * Math.PI) * Math.sin(u * Math.PI), interaction);
+          uncutPosition.setXYZ(
+            i,
+            (u * 2 - 1) * aspect,
+            currentY + displacement,
+            0.020 +
+              fold +
+              displacement,
+          );
           uncutUv.setXY(i, u, (currentY + 1) / 2);
         }
         uncutPosition.needsUpdate = true;
@@ -343,14 +407,16 @@ export async function createCutScene(
         uncutGeometry.computeVertexNormals();
       }
       const scale = aspect * SHEAR_WIDTH_RATIO;
-      shears.scale.set(scale, scale, 0.4);
+      // Depth separation prevents folded cloth from clipping the upper blade/handles.
+      // Orthographic projection retains the approved XY silhouette.
+      shears.scale.set(scale, scale, 6);
       upper.rotation.z = shot.blade;
       lower.rotation.z = -shot.blade;
       const startingX = -aspect - scale * 1.7;
       const initialRoot = 0.04 - (bladeContactOpen() * SHEAR_WIDTH_RATIO) / 2;
       const cuttingX = (shot.root * 2 - 1) * aspect;
       const exit = smooth((seconds - 3) / 0.7);
-      shears.rotation.y = 0.015 + Math.sin(seconds * 1.4) * 0.012;
+      shears.rotation.y = Math.sin(seconds * 1.4) * 0.008;
       shears.rotation.x = -0.012;
       const correctedX =
         cuttingX + shot.contact * scale * (1 - Math.cos(shears.rotation.y));
@@ -374,6 +440,31 @@ export async function createCutScene(
     resize();
     return {
       render,
+      pointer: (x, y, strength) => {
+        const now = performance.now() / 1000;
+        const nextX = (x * 2 - 1) * aspect,
+          nextY = 1 - y * 2;
+        const fresh = now - pulseTime > 1.1;
+        pulseX = fresh ? nextX : THREE.MathUtils.lerp(pulseX, nextX, 0.45);
+        pulseY = fresh ? nextY : THREE.MathUtils.lerp(pulseY, nextY, 0.45);
+        pulseTime = now;
+        pulseStrength = Math.min(0.045, Math.max(0, strength));
+        const recent = impulses[impulses.length - 1];
+        // Bounded trail; fast input cannot stack an unbounded number of impulses.
+        if (!recent || now - recent.time > 0.05) {
+          impulses.push({
+            time: now,
+            x: pulseX,
+            y: pulseY,
+            strength: pulseStrength,
+          });
+          if (impulses.length > 5) impulses.shift();
+        } else {
+          recent.x = pulseX;
+          recent.y = pulseY;
+        }
+      },
+      active: () => performance.now() / 1000 - pulseTime < 1.1,
       resize,
       dispose: () => {
         signal.removeEventListener("abort", dispose);

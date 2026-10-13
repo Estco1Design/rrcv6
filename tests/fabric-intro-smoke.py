@@ -31,12 +31,20 @@ with sync_playwright() as p:
    if name=='final':page.mouse.click(width/2,20)
    page.screenshot(path=str(out/f'fabric-{width}-{name}.png'),timeout=90000);no_overflow(page);print(width,name,state['seconds'],flush=True)
   ready(page);assert scene.get_attribute('data-tool')=='false'
+  # Final screenshot clicks deliberately trigger the new local cloth reaction.
+  # Its bounded 1.1-second decay must settle before asserting idle.
+  page.clock.fast_forward(1300)
   count=scene.get_attribute('data-render-count');page.clock.run_for(1000);assert scene.get_attribute('data-render-count')==count,'Final renderer did not stop'
   assert page.locator('.rrc-cut-title h2').evaluate('(e)=>e.scrollWidth<=innerWidth')
   canvas=scene.locator('canvas').evaluate('(e)=>({w:e.width,h:e.height})');assert canvas['w']*canvas['h']<=961000
   # Framer Motion may use native WAAPI for dialog exits. Resume the real clock
   # for interactions; the deterministic clock above is only for the WebGL shot.
-  page.clock.resume()
+  # Test navigation with a fresh native clock. Virtual performance time changes
+  # across resumed WAAPI transitions can dispatch Escape during the wrong mode.
+  context.close()
+  context=browser.new_context(viewport={'width':width,'height':height},reduced_motion='no-preference')
+  context.add_init_script("sessionStorage.setItem('rrc_cut_played','true')")
+  page=context.new_page();watch(page);page.goto(base+'/');ready(page)
   # Private form returns focus with Escape; the exact existing server flow remains intact.
   title_box=page.locator('.rrc-cut-title').bounding_box();page.get_by_role('button',name='PRIVATE ACCESS',exact=True).click();expect(page.get_by_label('Код доступа',exact=True)).to_be_visible();page.screenshot(path=str(out/f'fabric-{width}-code.png'));no_overflow(page);after_box=page.locator('.rrc-cut-title').bounding_box();assert all(abs(after_box[key]-title_box[key])<.5 for key in ['x','y','width','height']), 'The fixed wordmark moved when opening the private form'
   page.keyboard.press('Escape');expect(page.get_by_role('button',name='PRIVATE ACCESS',exact=True)).to_be_focused()
@@ -50,7 +58,7 @@ with sync_playwright() as p:
  # Skip while resources are still pending must not wait for them or enter the public site.
  context=browser.new_context(viewport={'width':320,'height':568},reduced_motion='no-preference');page=context.new_page();watch(page);held=[];page.route('**/intro/titanium-shears.glb',lambda route:held.append(route));page.goto(base+'/');page.get_by_role('button',name='Пропустить',exact=True).click();ready(page);expect(page.get_by_role('button',name='ВОЙТИ',exact=True)).to_be_enabled();expect(page.locator('[data-fabric-scene]')).to_have_count(0);no_overflow(page);[route.abort() for route in held];page.unroute_all(behavior='ignoreErrors');context.close()
  # Skip while the dynamic scene module itself is pending, then release the script.
- chunk=next(path.name for path in (root/'.next/static/chunks').glob('*.js') if 'cloth-intact.webp' in path.read_text())
+ chunk=next(path.name for path in (root/'.next/static/chunks').glob('*.js') if 'titanium-shears.glb' in path.read_text())
  context=browser.new_context(viewport={'width':390,'height':844},reduced_motion='no-preference');page=context.new_page();watch(page);held=[];requests=[];page.on('request',lambda request:requests.append(request.url))
  def hold_module(route):held.append(route);page.evaluate('window.__sceneModuleHeld=true')
  page.route('**/_next/static/chunks/'+chunk,hold_module);page.goto(base+'/',wait_until='domcontentloaded');page.wait_for_function('window.__sceneModuleHeld===true');page.get_by_role('button',name='Пропустить',exact=True).click();ready(page)

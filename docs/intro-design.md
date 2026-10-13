@@ -46,3 +46,47 @@ The animation is sampled with Playwright's clock. To avoid flooding the software
 Real-phone FPS, mobile Safari and physical on-screen keyboards were not tested. Cloth uses photographic large folds and shallow, controlled geometry; it is not a full volumetric material simulation. The scene clock is 4.5 seconds after assets are ready; network/loading time can precede it. Browser refreshes and skip use the final still.
 
 Preview server: port 3000, bound to 0.0.0.0, with isolated /tmp account/private databases. User data and .env.local are preserved. No deployment or main-branch merge was performed. To see the intro again, use a fresh/private browser session.
+
+## Follow-up: geometry and interaction
+
+The prior shot projected a photograph containing baked fold illumination in screen
+coordinates onto shallow meshes. This held the large folds stationary. The current
+renderer removes that projection: folds are spatial geometry with per-frame vertex
+normals, generated wool albedo (native 1254px, mobile 768px), a subtle twill normal and restrained physical sheen.
+Local pointer displacement is bounded and spatially feathered, delayed up to 150ms
+and decays within 1.1s. Outer vertices are pinned; the slit/HTML hit areas stay fixed.
+Passive pointer listeners do not cancel touch scrolling. A settled shot wakes on
+pointer input and stops again after decay. Reduced motion has no pointer deformation.
+
+The shear asset now has asymmetrical elliptical handles, rounded forged necks and
+six-segment machining bevels. Blade outlines and pivot/contact equations are unchanged.
+
+**Remaining critical limitations:** a licensed measured 4K textile PBR set and
+recorded fabric/scissor audio were unavailable. Current cloth is an authored geometric
+approximation with a generated micro-normal, not a photographed 4K scan or cloth
+simulation. The photographic static fallback remains distinct from the geometric
+render. Sound is visibly disabled while `public/intro/audio/manifest.json` is empty.
+The cue/lifecycle code is prepared, but real audio quality/synchronisation cannot be
+validated without recordings. Do not describe this version as a finished film.
+
+### Verification of the follow-up
+
+- `npm run check`: lint, TypeScript, 20 unit tests and production build passed.
+- `python tests/fabric-intro-smoke.py`: desktop/mobile shot stages, progressive
+  reveal, raw-UV cutting mask, HTML menus/focus, skip, once/session, reduced motion,
+  resource failure, hidden pause and actual no-WebGL browser flag passed.
+- `python tests/fabric-interaction-smoke.py`: pointer wake, bounded rapid input,
+  decay/idle stop, repeat after resource readiness, skip, private input and explicit
+  unavailable-audio state passed at 1280×720 and 390×844. No page exceptions.
+- Native-clock emulated touch and keyboard checks passed both entrances/Back,
+  Tab/Enter/Escape and focus restoration. ESTCO verification, private welcome/home,
+  revocation and public navigation passed against isolated `/tmp` databases.
+- `docs/media/intro-preview.mp4` captures actual production-browser poses at 12fps.
+  It is a visual record, not a device throughput measurement. The live local
+  production server uses port 3000.
+
+Browser rendering used desktop Chromium with SwiftShader; phones were emulated.
+Real-phone frame rate, mobile Safari and recorded sound quality were not tested.
+Licensed 4K measured material maps and the four original/redistributable recordings
+remain missing. Current folds and shears are authored approximations; do not claim
+photographic-reference fidelity or a finished sound-enabled film.

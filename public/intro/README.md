@@ -8,3 +8,5 @@
 No third-party model or stock-texture packages are used. User-supplied references guide the generated fabric plates. No baked text or scissor imagery is used as animation frames. Image-generation source outputs are retained in the workspace; the optimized runtime WebP resources are retained here.
 
 Runtime uses one projected textile material across the intact and split geometries to keep the large photographic folds continuous. Depth, cut-edge curling, hinge animation and PBR lighting are real-time. This is art-directed 2.5D cloth, not a volumetric cloth simulation. The two resource plates are not played as a slideshow.
+
+Follow-up wool-albedo.webp: original image-generation output, native 1254×1254; mobile derivative 768×768. This is an illustrative diffuse textile resource, not a 4K measured PBR scan. No baked large folds or lettering; UV follows moving mesh.
