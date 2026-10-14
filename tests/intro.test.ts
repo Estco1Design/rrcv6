@@ -138,3 +138,58 @@ test("desktop and mobile shear surfaces face outward after mirroring", () => {
     }
   }
 });
+
+test("forged shear arms have opposite-side grips that separate when the blades open", () => {
+  const bytes = readFileSync(
+    new URL("../public/intro/titanium-shears.glb", import.meta.url),
+  );
+  const length = bytes.readUInt32LE(12),
+    gltf = JSON.parse(bytes.toString("utf8", 20, 20 + length)),
+    binary = bytes.subarray(28 + length);
+  assert.equal(
+    gltf.meshes.length,
+    3,
+    "Floating spine/edge overlay meshes returned",
+  );
+  const center = (name: string) => {
+    const root = gltf.nodes.findIndex((n: { name: string }) => n.name === name);
+    let x = 0,
+      y = 0,
+      count = 0;
+    const visit = (index: number) => {
+      const node = gltf.nodes[index];
+      if (node.mesh !== undefined)
+        for (const primitive of gltf.meshes[node.mesh].primitives) {
+          const a = gltf.accessors[primitive.attributes.POSITION],
+            v = gltf.bufferViews[a.bufferView],
+            start = (v.byteOffset ?? 0) + (a.byteOffset ?? 0),
+            stride = v.byteStride ?? 12;
+          for (let i = 0; i < a.count; i++) {
+            const px = binary.readFloatLE(start + i * stride);
+            if (px < -0.55) {
+              x += px;
+              y += binary.readFloatLE(start + i * stride + 4);
+              count++;
+            }
+          }
+        }
+      for (const child of node.children ?? []) visit(child);
+    };
+    visit(root);
+    assert.ok(count > 100);
+    return { x: x / count, y: y / count };
+  };
+  const upper = center("UpperArm"),
+    lower = center("LowerArm");
+  assert.ok(upper.y < 0 && lower.y > 0);
+  const distance = (angle: number) =>
+    Math.abs(
+      upper.x * Math.sin(angle) +
+        upper.y * Math.cos(angle) -
+        (-lower.x * Math.sin(angle) + lower.y * Math.cos(angle)),
+    );
+  assert.ok(
+    distance(0.158) > distance(0.012) + 0.1,
+    "Opening the blades closed the handles",
+  );
+});

@@ -11,30 +11,28 @@
       "dpr": 1,
       "profile": "desktop",
       "startup": {
-        "contextAndSceneInitMs": 1684.7999999970198,
-        "normalFetchMs": 374.20000000298023,
-        "roughnessFetchMs": 374.59999999403954,
-        "colorFetchMs": 384.69999998807907,
-        "metalNormalFetchMs": 375.69999998807907,
-        "studioFetchMs": 375.59999999403954,
-        "roughnessDecodeMs": 30.69999998807907,
-        "metalNormalDecodeMs": 36.900000005960464,
-        "studioDecodeMs": 37.6000000089407,
-        "colorDecodeMs": 65.70000000298023,
-        "normalDecodeMs": 69.5,
-        "modelFetchMs": 479.79999999701977,
-        "modelParseMs": 11.400000005960464,
-        "resourcesReadyMs": 2197.0999999940395,
-        "cpuPreparationMs": 761.4000000059605,
-        "textureUploadSubmitMs": 32,
-        "textureUploadCompleteWallMs": 164.59999999403954,
-        "shaderCompileMs": 31.900000005960464,
-        "gpuWarmupMs": 2528.5,
-        "readyMs": 5702.199999988079
+        "contextAndSceneInitMs": 960.2000000029802,
+        "modelFetchMs": 166.29999999701977,
+        "modelParseMs": 12.700000002980232,
+        "metalNormalFetchMs": 179.59999999403954,
+        "studioFetchMs": 189.59999999403954,
+        "colorFetchMs": 194.8999999910593,
+        "studioDecodeMs": 8.600000008940697,
+        "metalNormalDecodeMs": 19.30000001192093,
+        "normalRoughnessFetchMs": 211.79999999701977,
+        "normalRoughnessDecodeMs": 223.20000000298023,
+        "colorDecodeMs": 267.6000000089407,
+        "resourcesReadyMs": 1423.7000000029802,
+        "cpuPreparationMs": 591.5,
+        "textureUploadSubmitMs": 523,
+        "textureUploadCompleteWallMs": 714.9000000059605,
+        "shaderCompileMs": 25.599999994039536,
+        "gpuWarmupMs": 2114.2000000029802,
+        "readyMs": 4909.9000000059605
       },
-      "first_shown_navigation_ms": "6461",
+      "first_shown_navigation_ms": "5825.70000000298",
       "pixel_count": "921600",
-      "vertices": "3770",
+      "vertices": "12642",
       "checks": [
         "top hover",
         "top mouse drag",
@@ -51,14 +49,14 @@
         "public entry/unmount"
       ],
       "cpu_frame": {
-        "n": 43,
-        "p50_ms": 6.800000011920929,
-        "p95_ms": 71.40000000596046
+        "n": 35,
+        "p50_ms": 9.399999991059303,
+        "p95_ms": 33.099999994039536
       },
       "observed_render_interval": {
-        "n": 38,
-        "p50_ms": 208.70000000298023,
-        "p95_ms": 501.29999999701977
+        "n": 31,
+        "p50_ms": 468.70000000298023,
+        "p95_ms": 1027.5
       }
     },
     {
@@ -69,30 +67,28 @@
       "dpr": 3,
       "profile": "mobile",
       "startup": {
-        "contextAndSceneInitMs": 838.0999999940395,
-        "normalFetchMs": 74.79999999701977,
-        "roughnessFetchMs": 74.90000000596046,
-        "metalNormalFetchMs": 74.29999999701977,
-        "studioFetchMs": 74.1000000089407,
-        "colorFetchMs": 78,
-        "metalNormalDecodeMs": 6.200000002980232,
-        "studioDecodeMs": 9.399999991059303,
-        "roughnessDecodeMs": 23.799999997019768,
-        "normalDecodeMs": 28.099999994039536,
-        "colorDecodeMs": 42.19999998807907,
-        "modelFetchMs": 118.19999998807907,
-        "modelParseMs": 12.800000011920929,
-        "resourcesReadyMs": 973.4000000059605,
-        "cpuPreparationMs": 332.29999999701977,
-        "textureUploadSubmitMs": 23.299999997019768,
-        "textureUploadCompleteWallMs": 97.20000000298023,
-        "shaderCompileMs": 33.69999998807907,
-        "gpuWarmupMs": 1315.800000011921,
-        "readyMs": 2762
+        "contextAndSceneInitMs": 877.0999999940395,
+        "colorFetchMs": 88.09999999403954,
+        "modelFetchMs": 87.5,
+        "modelParseMs": 15.600000008940697,
+        "metalNormalFetchMs": 108.3999999910593,
+        "studioFetchMs": 108.30000001192093,
+        "normalRoughnessFetchMs": 111.1000000089407,
+        "metalNormalDecodeMs": 4.799999997019768,
+        "studioDecodeMs": 4.9000000059604645,
+        "normalRoughnessDecodeMs": 53.5,
+        "colorDecodeMs": 97.20000000298023,
+        "resourcesReadyMs": 1062.7000000029802,
+        "cpuPreparationMs": 237.8999999910593,
+        "textureUploadSubmitMs": 28.099999994039536,
+        "textureUploadCompleteWallMs": 128.8999999910593,
+        "shaderCompileMs": 30.900000005960464,
+        "gpuWarmupMs": 923.0999999940395,
+        "readyMs": 2402
       },
-      "first_shown_navigation_ms": "3564.2000000029802",
+      "first_shown_navigation_ms": "3242.199999988079",
       "pixel_count": "599114",
-      "vertices": "2050",
+      "vertices": "7954",
       "checks": [
         "top touch drag",
         "top release outside",
@@ -106,14 +102,14 @@
         "public entry/unmount"
       ],
       "cpu_frame": {
-        "n": 76,
-        "p50_ms": 2.0499999970197678,
-        "p95_ms": 34.5
+        "n": 65,
+        "p50_ms": 5.699999988079071,
+        "p95_ms": 21.799999997019768
       },
       "observed_render_interval": {
-        "n": 71,
-        "p50_ms": 147.1000000089407,
-        "p95_ms": 514.4000000059605
+        "n": 61,
+        "p50_ms": 277.30000001192093,
+        "p95_ms": 722.3999999910593
       }
     }
   ]
