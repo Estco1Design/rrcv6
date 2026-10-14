@@ -88,3 +88,53 @@ test("final cloth edges reach the reference across both sides, including the del
   assert.equal(cutRelease(during, Math.min(1, during.cut + 0.1)), 0);
   assert.equal(cutRelease(cutFrame(0.7), 0), 0);
 });
+
+test("desktop and mobile shear surfaces face outward after mirroring", () => {
+  for (const asset of ["titanium-shears.glb", "titanium-shears-mobile.glb"]) {
+    const bytes = readFileSync(
+      new URL(`../public/intro/${asset}`, import.meta.url),
+    );
+    const jsonLength = bytes.readUInt32LE(12);
+    const gltf = JSON.parse(bytes.toString("utf8", 20, 20 + jsonLength));
+    const binary = bytes.subarray(28 + jsonLength);
+    const values = (index: number): number[][] => {
+      const a = gltf.accessors[index],
+        view = gltf.bufferViews[a.bufferView];
+      const lanes = a.type === "VEC3" ? 3 : 1;
+      const width =
+        a.componentType === 5121 ? 1 : a.componentType === 5123 ? 2 : 4;
+      const stride = view.byteStride ?? lanes * width;
+      const start = (view.byteOffset ?? 0) + (a.byteOffset ?? 0);
+      return Array.from({ length: a.count }, (_, row) =>
+        Array.from({ length: lanes }, (_, lane) => {
+          const p = start + row * stride + lane * width;
+          if (a.componentType === 5126) return binary.readFloatLE(p);
+          if (width === 1) return binary.readUInt8(p);
+          return width === 2 ? binary.readUInt16LE(p) : binary.readUInt32LE(p);
+        }),
+      );
+    };
+    for (const mesh of gltf.meshes) {
+      let signedVolume = 0;
+      for (const primitive of mesh.primitives) {
+        const positions = values(primitive.attributes.POSITION);
+        const indices = values(primitive.indices).flat();
+        for (let i = 0; i < indices.length; i += 3) {
+          const [a, b, c] = indices
+            .slice(i, i + 3)
+            .map((index) => positions[index]);
+          for (let k = 0; k < 3; k++)
+            signedVolume +=
+              (a[k] *
+                (b[(k + 1) % 3] * c[(k + 2) % 3] -
+                  b[(k + 2) % 3] * c[(k + 1) % 3])) /
+              6;
+        }
+      }
+      assert.ok(
+        signedVolume > 0,
+        `${asset}: ${mesh.name} has inverted closed-surface winding`,
+      );
+    }
+  }
+});

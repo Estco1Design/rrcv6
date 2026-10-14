@@ -1,92 +1,99 @@
-# RRC textile opening / design plan
+# RRC entrance: two-sheet revision, 2026-10-14
 
-Reference 4 is the final composition: fabric ridges above and below, uninterrupted black opening, a small centered wordmark and two restrained entrances.
+Only the entrance scene is changed. Existing Unbounded / IBM Plex Mono fonts, wordmark, public entry, PRIVATE ACCESS server authentication and remaining pages are preserved. No deployment or main-branch merge is part of this revision. frontend-design was not used for this task.
 
-Palette: void #000000; cloth shadows #080809; cloth ridges #242426; titanium #b3b2ae; wordmark #deddd8. Existing Unbounded 300 for the wordmark, IBM Plex Mono for the small entrances. No new font.
+## Causes found
 
-Layout: top cloth / central name / two entrances / bottom cloth. Desktop name approximately 45% of the screen width, around 48% screen height; phone uses the full safe width with smaller type. Two entrances remain side by side.
+The old deformation was a pointer-driven visual pulse, without a grab state. It did not give each sheet a real captured surface point. Large photographic fold lighting conflicted with moving geometry. Mobile used the same tool/texture costs as desktop; environment filtering and driver work could happen at the start of the film. SVG paths alone did not establish Chrome's mobile touch-action policy, causing vertical drags to become browser pans and cancel capture. The gesture policy now belongs to the hit-path SVG ancestor, outside the central HTML controls.
 
-Motion: one finite 4.5-second shot. Cloth is revealed by light, settles once, then opens only behind the scissor contact. A single split, bevelled 3D shear asset articulates around one pivot and exits right. No idle animation, particles, typing, glow or decorative UI.
+## Final behavior
 
-Technique: lightweight Three.js, deformable cloth with dedicated material maps; opaque sculpted titanium shears; real HTML wordmark under the canvas, spatially clipped behind contact; HTML buttons fade at the end. No postprocessing or physics simulation. Renderer capped by DPR and total pixels, 30 fps desktop / 24 mobile. Reduced motion and failure use final cloth plate. Shared session key preserves existing entry behavior.
+One intact mesh covers the split until the blade contact passes. The finite 4.5-second choreography reveals cloth, brings in the same articulated shear, cuts left to right in four strokes, reveals fixed HTML letters only behind contact, exits right and opens the existing menu. Resources, texture uploads, shaders and a hidden first draw are warmed before the clock starts. The preparation plate is quiet and text-free. Timeout is bounded to 12 seconds; skip/error/context loss/reduced motion show working HTML entrances immediately.
 
-Review: preserve the sparse reference, not a large fashion headline or fullscreen decorative sculpture. The cut is the only narrative event; UI stays quiet. Static assets must contain no text or scissors. No reference slideshow.
+After the film, each panel owns a CPU spring lattice, base positions, velocities, pins and grab state. Outer/side vertices are fixed. Local Gaussian targets, neighbor bending resistance and two structural stretch projections per substep distribute motion. Timestep is capped at 1/15 second, with at most four 1/60 substeps. Drag is limited to 4% of the shorter viewport side; hover is approximately 4–9 CSS pixels. The cut edges are prevented from intruding into the central menu. Release has bounded damping and settles within 1.15 seconds.
 
-## Implementation and repeatability
+Pointer Events raycast the **actual updated CPU mesh**. Both panels recalculate normals and bounds after deformation. Transparent hit paths are projected from the current mesh edge, not rectangular half-screen hitboxes. One pointer owns capture; extra touches cannot replace it. Pointerup/cancel/lost capture, missing mouse buttons, blur, visibility, resize and unmount release it. Central HTML controls and sound/skip never start a cloth drag. `touch-action:pinch-zoom` is scoped to the hit SVG; page/viewport zoom is not disabled.
 
-The shot uses one connected uncut mesh and two split, deforming panels with a shared projected photographic material. The connected mesh is removed spatially at the blade intersection; the panels behind it open with a short delay. Projection keeps distant folds continuous across the front. The final still plate is reserved for reduced motion, loading failure and later refreshes. Name reveal has a small additional safety margin behind the cut; the letters are never animated individually.
+After settling, there is no frame loop. Input wakes rendering; hidden tabs stop it. A session repeat loads the final **interactive** pose without replaying the movie. Completion also synchronizes the internal clock to 4.5 seconds, so a resize/input wake cannot overwrite that pose with time zero. Public entry keeps the existing session behavior. Reduced motion uses only the static plate and HTML, with no Three.js request.
 
-The instrument has four strokes. Its hinge advances while reopening; the cut grows during closing at the actual intersection of the honed cutting edges. Shear proportions and materials stay constant. A soft area light and restrained environment provide reflected highlights, never emission.
+## Material and scissors
 
-The 4.5-second clock starts after assets are ready. An 8-second asynchronous loading timeout falls back to the final HTML menu. Animation is marked played on first attempt; refreshing halfway through shows the final still. Entering stores the existing rrc_intro_seen key. Skip shows the final still immediately and does not enter the public site. Reduced motion does not load Three.js, the shear model or normal maps. WebGL loss, asset failure and absent WebGL leave the entrances usable.
+Original 2048² procedural yarn maps have matching albedo, micro-normal and roughness. They are not a photographic 4K scan. The animated material contains no baked macro folds/light; folds are mesh shape with recalculated normals. Albedo is sRGB; normal/roughness/environment are linear. Maps repeat at matching density, with mipmaps and bounded anisotropy; normal strength and sheen are restrained.
 
-Renderer cap: at most 960,000 pixels, maximum DPR 1.25 desktop / 1.15 narrow screens; scheduling capped at 30 / 24 fps. No postprocessing, realtime shadow maps or full physics. No continuous frame loop after completion. Hidden visibility stops the clock and render loop. Resize redraws a final still only when necessary.
+The Blender tool has asymmetric hollow grips, forged necks with real depth transitions, six-segment machining bevels, thick satin blades with a shallow convex face and thin polished edges. Outward winding is corrected on both grips and the mirrored lower parts. Both arms rotate around one shared bolt. Blade depth is no longer multiplied by an artificial sixfold scale. Local cloth pressure places its surface at depth 0.286, between the flat mating faces (0.2845 / 0.2875 in scene space). Camber is limited to the exterior blade faces; the tool stays in that plane while its arms rotate around Z. This keeps the lower blade beneath the cloth and the upper blade above during contact. An offline prefiltered softbox supplies changing metal reflections; there are no glowing highlights, postprocessing or runtime PMREM passes.
 
-Generated photographic cloth supplies fine weave and large folds. The geometry deforms cut edges and shallow folds; it does not reproduce full material physics. This is an intentional lightweight 2.5D technique. Mobile fits the full composition to its viewport; it does not crop the center of a landscape frame.
+## Fixed quality profiles
 
-## Files
+| Parameter | Desktop | Mobile (<768 CSS px at preparation) |
+| --- | --- | --- |
+| Cloth grid per sheet | 64 × 28 segments | 40 × 24 segments |
+| Two final-sheet vertices | 3,770 | 2,050 |
+| Canvas pixel budget | 1,100,000 | 620,000 |
+| DPR ceiling | 1.3 | 1.35 |
+| Scheduler ceiling | 30 fps | 24 fps |
+| Albedo / normal / roughness | 1024 / 768 / 768 | 768 / 512 / 512 |
+| Model bytes | 898,096 | 556,916 |
 
-Runtime: src/components/intro/RrcBootIntro.tsx; FabricCutScene.tsx; create-cut-scene.ts; cut-timeline.ts; src/app/globals.css.
-Resources: public/intro/cloth-intact.webp; cloth-plate.webp; titanium-shears.glb; twill-normal.png; titanium-normal.png; README.md.
-Generators: scripts/intro/generate-shears.py; generate-textures.py.
-Checks: tests/intro.test.ts; tests/fabric-intro-smoke.py; existing tests/intro-smoke.py and browser-smoke.py.
+These are ceilings, not achieved FPS claims. No quality oscillation occurs during interaction. Runtime texture RGBA allocation including ordinary mip chains is approximately 12.0 MiB desktop / 6.33 MiB mobile, excluding framebuffer, MSAA, geometry and CPU bitmaps. WebP saves transfer bytes, not GPU RGBA allocation. KTX2 was not added: this modest resource set does not establish that an additional transcoder and startup pipeline would be faster.
 
-## Validation — 2026-10-13
+Exact dimensions and file sizes are recorded in `media/cloth-resource-sizes.json` and [the resource manifest](../public/intro/README.md).
 
-- npm run check: ESLint, TypeScript, 20/20 Node tests, production build — passed. Final CSS adjustments were followed by a successful production build (including lint/type validation).
-- tests/fabric-intro-smoke.py against the standalone production server — passed: all shot stages at 1280×720 and 390×844/DPR3, cut masking, shared hinge, fixed HTML wordmark (including opening the private form), complete far-right release, final renderer stop, pixel budget, skip during assets and pending dynamic module, session replay behavior, reduced-motion resource avoidance, failed model download, visibility pause/resume, disabled WebGL, short 320×280 form viewport/scroll reset. No unhandled page exceptions or unexpected console errors. The disabled-WebGL probe intentionally emits the renderer's expected context-creation diagnostics.
-- Existing tests/browser-smoke.py — passed: original private code entry, greeting, five sections, forged/revoked cookie checks, accounts, both fit models, measurement persistence, mobile layout, fallback and account removal. Existing tests/intro-smoke.py — passed.
-- Native-clock follow-up: ESTCO → welcome → private home → sign out; public page has no private link and no repeated intro — passed.
-- Emulated native touch: both entrances and Back — passed. Keyboard: Tab, Enter, Escape, focus restoration and public entry — passed.
-- Screenshots: qa/fabric-{1280,390}-{black,fabric,entry,cut,cut-right,spread,final,code}.png. Reduced motion: qa/fabric-reduced-320.png.
-- Video: qa/intro-preview.mp4, actual browser frames sampled at 12 fps with controlled time, 960×540. This demonstrates appearance, not device throughput. The website runs the WebGL scene, not this video.
+## Acceptance
 
-The animation is sampled with Playwright's clock. To avoid flooding the software GPU, stage checks fast-forward to analytic poses; navigation is checked with a native clock because mocked performance time across document reloads is incompatible with Motion's native animation exit clock. Visibility checks dispatch synthetic visibility events. These distinctions do not constitute a real-device performance measurement.
+`npm run check`: ESLint, TypeScript, **23/23 unit tests** and production build passed. Three new tests cover model winding plus independent sheets, pinned borders, drag bounds, aperture protection and cancellation/settling. Existing cut/shared-hinge and auth/account tests remain in the suite.
 
-Real-phone FPS, mobile Safari and physical on-screen keyboards were not tested. Cloth uses photographic large folds and shallow, controlled geometry; it is not a full volumetric material simulation. The scene clock is 4.5 seconds after assets are ready; network/loading time can precede it. Browser refreshes and skip use the final still.
+`tests/cloth-grab-smoke.py`: native-clock browser acceptance, separate fresh desktop and touch contexts. Passed upper hover, lower hover, upper/lower mouse grabs, upper/lower touch grabs, release outside original area, pointercancel, real lostpointercapture, resize during capture, additional finger, hidden-handler cancellation/pause, idle-loop stop, stable HTML wordmark, private input after interaction, replay/skip and public entry/unmount. An optional recording-only pointer ring/label identifies which sheet is captured; it is injected by the test, not shipped with the site. Video and automated touch dispatch add overhead; these acceptance timings must not be presented as device performance.
 
-Preview server: port 3000, bound to 0.0.0.0, with isolated /tmp account/private databases. User data and .env.local are preserved. No deployment or main-branch merge was performed. To see the intro again, use a fresh/private browser session.
+`tests/fabric-interaction-smoke.py` now invokes this acceptance suite; the obsolete shader-pulse/virtual-time check is replaced. `tests/fabric-intro-smoke.py` checks analytic film stages, reveal behind cut, final idle, pixel budget, HTML focus, skip during asset/module load, once/session, reduced motion, failure, visibility pause, no WebGL and short private-form viewport. Its functional frame clock is deliberately separate from native-clock performance runs.
 
-## Follow-up: geometry and interaction
+`tests/cloth-lifecycle-smoke.py`: passed native-clock repeat across reload/wake, rapid/clamped input on both panels, a complete replay, private input, corrupt bitmap decode and the 12-second loading timeout. Native keyboard/touch focus checks and ESTCO → welcome → private home → logout also passed against isolated databases.
 
-The prior shot projected a photograph containing baked fold illumination in screen
-coordinates onto shallow meshes. This held the large folds stationary. The current
-renderer removes that projection: folds are spatial geometry with per-frame vertex
-normals, generated wool albedo (native 1254px, mobile 768px), a subtle twill normal and restrained physical sheen.
-Local pointer displacement is bounded and spatially feathered, delayed up to 150ms
-and decays within 1.1s. Outer vertices are pinned; the slit/HTML hit areas stay fixed.
-Passive pointer listeners do not cancel touch scrolling. A settled shot wakes on
-pointer input and stops again after decay. Reduced motion has no pointer deformation.
+Raw browser screenshots and native videos are copied into `docs/media`; the review page presents the untouched approved reference beside the actual rendered final. Video demonstrates appearance and behavior; it does not prove mobile hardware performance.
 
-The shear asset now has asymmetrical elliptical handles, rounded forged necks and
-six-segment machining bevels. Blade outlines and pivot/contact equations are unchanged.
+## Measurement method and limitations
 
-**Remaining critical limitations:** a licensed measured 4K textile PBR set and
-recorded fabric/scissor audio were unavailable. Current cloth is an authored geometric
-approximation with a generated micro-normal, not a photographed 4K scan or cloth
-simulation. The photographic static fallback remains distinct from the geometric
-render. Sound is visibly disabled while `public/intro/audio/manifest.json` is empty.
-The cue/lifecycle code is prepared, but real audio quality/synchronisation cannot be
-validated without recordings. Do not describe this version as a finished film.
+Machine: Debian 13 cloud VM, Intel Xeon Platinum 8573C, 5 visible vCPU (cgroup quota: 4 CPU). Browser: Chromium 154.0.8037.57, headless ANGLE/SwiftShader software renderer. Mobile viewport: 390 × 844, emulated DPR3 and touch; the canvas uses its separate capped profile. **No real phone, mobile Safari or hardware mobile GPU was tested.**
 
-### Verification of the follow-up
+Cold tests launch a fresh browser process, clear/disable cache and do not record video. Separate runs use unthrottled localhost and CDP CPU ×4 plus 8 Mbps / 80 ms network. Detailed per-resource fetch/decode, model parse, geometry preparation, upload, compile, GPU warmup and first-frame callback measurements appear below and in `media/cloth-cold-start.json`.
 
-- `npm run check`: lint, TypeScript, 20 unit tests and production build passed.
-- `python tests/fabric-intro-smoke.py`: desktop/mobile shot stages, progressive
-  reveal, raw-UV cutting mask, HTML menus/focus, skip, once/session, reduced motion,
-  resource failure, hidden pause and actual no-WebGL browser flag passed.
-- `python tests/fabric-interaction-smoke.py`: pointer wake, bounded rapid input,
-  decay/idle stop, repeat after resource readiness, skip, private input and explicit
-  unavailable-audio state passed at 1280×720 and 390×844. No page exceptions.
-- Native-clock emulated touch and keyboard checks passed both entrances/Back,
-  Tab/Enter/Escape and focus restoration. ESTCO verification, private welcome/home,
-  revocation and public navigation passed against isolated `/tmp` databases.
-- `docs/media/intro-preview.mp4` captures actual production-browser poses at 12fps.
-  It is a visual record, not a device throughput measurement. The live local
-  production server uses port 3000.
+GPU fences measure wall time until completion, **not GPU hardware execution time**. `cpuFrameMs` measures JS scene update and renderer submission, not presentation. Render intervals measure intervals between submitted frames, including software renderer/browser scheduling. `firstShownNavigationMs` is the first prepared requestAnimationFrame callback from navigation, not a physical screen scanout measurement. Tests without video are used for the performance table.
 
-Browser rendering used desktop Chromium with SwiftShader; phones were emulated.
-Real-phone frame rate, mobile Safari and recorded sound quality were not tested.
-Licensed 4K measured material maps and the four original/redistributable recordings
-remain missing. Current folds and shears are authored approximations; do not claim
-photographic-reference fidelity or a finished sound-enabled film.
+The rendered material/model remain authored CG approximations. They do not equal the photographic reference in weave softness, wrinkle complexity or light response. A measured black suiting PBR scan and a professionally sculpted/validated hero tool would further improve fidelity; simply enlarging these generated maps would not. The loading/fallback photograph and interactive CG pose are visually distinct. Recorded audio assets are absent in the existing manifest; sound is disabled, with the original lifecycle preserved. Do not call this a measured 4K material, real-phone performance certification or a fully sound-designed film.
+
+## Changed files and local preview
+
+Runtime: `src/components/intro/create-cut-scene.ts`, `cloth-dynamics.ts`, `FabricCutScene.tsx`, `RrcBootIntro.tsx`; scoped entrance styles in `src/app/globals.css`.
+
+Resources: new portrait plate, yarn sources/runtime maps, offline CubeUV and mobile shear LOD under `public/intro/`; regenerated desktop shear. Generators under `scripts/intro/`. Tests: extended `intro.test.ts`, `cloth-dynamics.test.ts`, `cloth-grab-smoke.py`, `cloth-cold-start.py`, `fabric-intro-smoke.py`, `fabric-interaction-smoke.py`, `cloth-lifecycle-smoke.py`. Documentation: this report, resource README and review media.
+
+Production preview runs on port 3000 with isolated account/private SQLite databases and media under `/tmp`. User data and `.env.local` were preserved. For your machine: `npm ci`, then `npm run dev`; open `http://localhost:3000` in a fresh/private session. Use “Повторить” for another shot. The published website is unchanged.
+
+## Cold-run results (final code and assets, no video recording)
+
+| Metric (ms) | Localhost, CPU ×1 | 8 Mbps / 80 ms, CPU ×4 |
+| --- | ---: | ---: |
+| Dynamic module import | 101.9 | 420.1 |
+| WebGL context / initial scene | 810.5 | 117.6 |
+| Parallel resource phase incl. context | 908.8 | 969.8 |
+| Model fetch | 64.4 | 744.1 |
+| Model parse | 13.2 | 98.3 |
+| Color bitmap decode | 17.7 | 35.0 |
+| Normal bitmap decode | 11.9 | 19.2 |
+| Roughness bitmap decode | 11.0 | 20.5 |
+| Metal-normal bitmap decode | 12.1 | 16.0 |
+| Studio bitmap decode | 12.2 | 8.1 |
+| CPU geometry/material preparation | 111.3 | 281.6 |
+| Texture upload submit | 40.4 | 69.5 |
+| Texture completion fence wall time | 167.0 | 213.2 |
+| Shader compileAsync | 26.9 | 94.6 |
+| Hidden first draw + completion fence | 868.6 | 855.2 |
+| Scene factory ready (excl. module import) | 2094.2 | 2471.6 |
+| Prepared first RAF from navigation | 2822.2 | 4884.0 |
+| Interaction JS/submission median | 2.3 | 28.2 |
+| Interaction JS/submission p95 | 18.3 | 106.4 |
+| Observed render interval median | 122.9 | 241.9 |
+| Observed render interval p95 | 291.7 | 533.5 |
+
+Each column is one fresh-process/cache-disabled run, not a population confidence interval. Interaction sample counts: 40, 44. Both use the mobile profile, 599,114 actual canvas pixels and 2,050 final-sheet vertices. Per-resource fetch times, model hash and raw samples are in `media/cloth-cold-start.json`. Fetches run concurrently; do not sum them.
+
+An earlier series showed severe cloud/software-renderer stalls (unthrottled JS p95 784.3 ms, render-interval p95 18,576.9 ms; CPU ×4 interval p95 680.9 ms). It is retained as `media/cloth-cold-start-first-series.json`. The measurements were repeated to investigate variability, assert capture/reset sample history and verify the final corrected tool. The outlier is not erased or attributed to a proven cause. No result here establishes smooth real-phone rendering.

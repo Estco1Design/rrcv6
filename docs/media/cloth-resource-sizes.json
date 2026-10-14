@@ -1,0 +1,114 @@
+[
+  {
+    "path": "public/intro/cloth-plate.webp",
+    "bytes": 131688,
+    "dimensions": [
+      1672,
+      941
+    ]
+  },
+  {
+    "path": "public/intro/cloth-plate-mobile.webp",
+    "bytes": 129566,
+    "dimensions": [
+      853,
+      1844
+    ]
+  },
+  {
+    "path": "public/intro/wool-color-source.png",
+    "bytes": 2080332,
+    "dimensions": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "path": "public/intro/wool-normal-source.png",
+    "bytes": 2106484,
+    "dimensions": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "path": "public/intro/wool-rough-source.png",
+    "bytes": 685816,
+    "dimensions": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "path": "public/intro/wool-color-desktop.webp",
+    "bytes": 55222,
+    "dimensions": [
+      1024,
+      1024
+    ]
+  },
+  {
+    "path": "public/intro/wool-normal-desktop.png",
+    "bytes": 388861,
+    "dimensions": [
+      768,
+      768
+    ]
+  },
+  {
+    "path": "public/intro/wool-rough-desktop.png",
+    "bytes": 117114,
+    "dimensions": [
+      768,
+      768
+    ]
+  },
+  {
+    "path": "public/intro/wool-color-mobile.webp",
+    "bytes": 57068,
+    "dimensions": [
+      768,
+      768
+    ]
+  },
+  {
+    "path": "public/intro/wool-normal-mobile.png",
+    "bytes": 172300,
+    "dimensions": [
+      512,
+      512
+    ]
+  },
+  {
+    "path": "public/intro/wool-rough-mobile.png",
+    "bytes": 54974,
+    "dimensions": [
+      512,
+      512
+    ]
+  },
+  {
+    "path": "public/intro/titanium-normal.png",
+    "bytes": 81755,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "path": "public/intro/studio-cubeuv.png",
+    "bytes": 24826,
+    "dimensions": [
+      336,
+      256
+    ]
+  },
+  {
+    "path": "public/intro/titanium-shears.glb",
+    "bytes": 898096
+  },
+  {
+    "path": "public/intro/titanium-shears-mobile.glb",
+    "bytes": 556916
+  }
+]

@@ -20,7 +20,8 @@ export function RrcBootIntro() {
     [reduced, setReduced] = useState(true),
     [ready, setReady] = useState(false),
     [fallback, setFallback] = useState(false),
-    [replay, setReplay] = useState(0);
+    [replay, setReplay] = useState(0),
+    [preparing, setPreparing] = useState(true);
   const [audioAvailable, setAudioAvailable] = useState(false),
     [sound, setSound] = useState(false);
   const audio = useRef<CutAudio>();
@@ -89,7 +90,7 @@ export function RrcBootIntro() {
       if (!started.current) {
         started.current = true;
         if (sessionStorage.getItem(playedKey) === "true") {
-          setFallback(true);
+          setFallback(false);
           setReady(true);
         } else sessionStorage.setItem(playedKey, "true");
       }
@@ -190,15 +191,18 @@ export function RrcBootIntro() {
           transition={{ duration: reduced ? 0 : 0.3 }}
         >
           <DialogFocus />
-          {fallback && <div className="rrc-cut-plate" aria-hidden="true" />}
+          {(fallback || preparing) && (
+            <div className="rrc-cut-plate" aria-hidden="true" />
+          )}
           <div
             className="rrc-cut-title"
-            style={fallback ? { clipPath: "none" } : undefined}
+            style={fallback || ready ? { clipPath: "none" } : undefined}
           >
             <h2 className="font-display font-light">{word}</h2>
           </div>
           {policyReady && !fallback && (
             <FabricCutScene
+              onPrepared={() => setPreparing(false)}
               audio={audio.current}
               key={replay}
               final={ready}
@@ -311,6 +315,7 @@ export function RrcBootIntro() {
                     audio.current?.reset();
                     setReady(false);
                     setFallback(false);
+                    setPreparing(true);
                     setReplay((value) => value + 1);
                   }
                 } catch {
@@ -332,6 +337,7 @@ export function RrcBootIntro() {
                 audio.current?.reset();
                 setReady(false);
                 setFallback(false);
+                setPreparing(true);
                 setReplay((value) => value + 1);
               }}
             >

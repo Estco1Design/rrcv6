@@ -8,7 +8,9 @@ export function FabricCutScene({
   onComplete,
   onFailure,
   audio,
+  onPrepared,
 }: {
+  onPrepared: () => void;
   audio?: CutAudio;
   final: boolean;
   onComplete: () => void;
@@ -16,9 +18,9 @@ export function FabricCutScene({
 }) {
   const host = useRef<HTMLDivElement>(null),
     finish = useRef(final),
-    callbacks = useRef({ onComplete, onFailure }),
+    callbacks = useRef({ onComplete, onFailure, onPrepared }),
     controller = useRef<(() => void) | null>(null);
-  callbacks.current = { onComplete, onFailure };
+  callbacks.current = { onComplete, onFailure, onPrepared };
   finish.current = final;
   useEffect(() => {
     if (final) controller.current?.();
@@ -39,6 +41,7 @@ export function FabricCutScene({
     const apply = (seconds: number) => {
       const shot = cutFrame(seconds);
       scene?.render(seconds);
+      element.dataset.interactive = String(seconds >= INTRO_DURATION);
       audio?.update(seconds);
       dialog?.style.setProperty("--intro-menu", String(shot.menu));
       dialog?.style.setProperty(
@@ -48,9 +51,12 @@ export function FabricCutScene({
       element.dataset.state = shot.done ? "complete" : "playing";
     };
     const complete = () => {
-      if (abort.signal.aborted || done) return;
+      // A session-repeat request can arrive before async preparation. Retain it
+      // in finish.current; never mark an unprepared scene done.
+      if (abort.signal.aborted || done || !scene) return;
       cancelAnimationFrame(frame);
       frame = 0;
+      elapsed = INTRO_DURATION;
       apply(INTRO_DURATION);
       if (!done) {
         done = true;
@@ -66,7 +72,7 @@ export function FabricCutScene({
       abort.abort();
       callbacks.current.onFailure();
     };
-    const loadTimeout = window.setTimeout(fail, 8000);
+    const loadTimeout = window.setTimeout(fail, 12000);
     const tick = (now: number) => {
       if (abort.signal.aborted) return;
       if (document.hidden) {
@@ -88,8 +94,10 @@ export function FabricCutScene({
       frame = !done || scene?.active() ? requestAnimationFrame(tick) : 0;
     };
     const visibility = () => {
-      if (document.hidden) audio?.suspend();
-      else audio?.resume();
+      if (document.hidden) {
+        release();
+        audio?.suspend();
+      } else audio?.resume();
       cancelAnimationFrame(frame);
       frame = 0;
       last = 0;
@@ -101,31 +109,118 @@ export function FabricCutScene({
         if (!done || scene.active()) frame = requestAnimationFrame(tick);
       }
     };
-    const pointer = (event: PointerEvent) => {
-      if (document.hidden || !scene) return;
-      const bounds = element.getBoundingClientRect();
-      const y = (event.clientY - bounds.top) / bounds.height;
-      const menu = (event.target as HTMLElement).closest(".rrc-cut-entries");
-      scene.pointer(
-        (event.clientX - bounds.left) / bounds.width,
-        done && menu ? (y < 0.55 ? 0.3 : 0.75) : y,
-        (menu ? 10 : 20) / bounds.height,
-      );
-      if (!frame) {
+    let pointerId: number | null = null,
+      capture: HTMLElement | null = null;
+    let previousX = 0,
+      previousY = 0,
+      previousTime = 0;
+    const wake = () => {
+      if (
+        scene &&
+        (!done || scene.active()) &&
+        !abort.signal.aborted &&
+        !frame &&
+        !document.hidden
+      ) {
         last = 0;
         frame = requestAnimationFrame(tick);
       }
     };
-    dialog?.addEventListener("pointermove", pointer, { passive: true });
-    dialog?.addEventListener("pointerdown", pointer, { passive: true });
+    const coordinates = (event: PointerEvent) => {
+      const bounds = element.getBoundingClientRect();
+      return {
+        x: (event.clientX - bounds.left) / bounds.width,
+        y: (event.clientY - bounds.top) / bounds.height,
+      };
+    };
+    const release = () => {
+      const id = pointerId,
+        node = capture;
+      pointerId = null;
+      capture = null;
+      element.dataset.dragging = "";
+      scene?.release();
+      if (id !== null && node?.hasPointerCapture(id))
+        node.releasePointerCapture(id);
+      wake();
+    };
+    const pointerMove = (event: PointerEvent) => {
+      if (!done || document.hidden || !scene) return;
+      const point = coordinates(event);
+      if (pointerId !== null) {
+        if (event.pointerId !== pointerId) return;
+        if (
+          !capture?.hasPointerCapture(pointerId) ||
+          (event.pointerType === "mouse" && event.buttons === 0)
+        ) {
+          release();
+          return;
+        }
+        scene.pull(point.x, point.y);
+        wake();
+        return;
+      }
+      if (event.pointerType !== "mouse") return;
+      const target = (event.target as HTMLElement).closest<HTMLElement>(
+        "[data-cloth-hit]",
+      );
+      if (!target) return;
+      const dt = Math.max(10, event.timeStamp - previousTime);
+      const speed = Math.min(
+        1,
+        Math.hypot(event.clientX - previousX, event.clientY - previousY) / dt,
+      );
+      previousX = event.clientX;
+      previousY = event.clientY;
+      previousTime = event.timeStamp;
+      const sheet = scene.hover(point.x, point.y, speed);
+      target.style.cursor = sheet ? "grab" : "default";
+      if (sheet) wake();
+    };
+    const pointerDown = (event: PointerEvent) => {
+      if (
+        !done ||
+        document.hidden ||
+        !scene ||
+        pointerId !== null ||
+        !event.isPrimary ||
+        event.button !== 0
+      )
+        return;
+      const target = (event.target as HTMLElement).closest<HTMLElement>(
+        "[data-cloth-hit]",
+      );
+      if (!target) return;
+      const point = coordinates(event),
+        sheet = scene.grab(point.x, point.y);
+      if (!sheet) return;
+      pointerId = event.pointerId;
+      capture = target;
+      element.dataset.dragging = sheet;
+      target.setPointerCapture(event.pointerId);
+      wake();
+    };
+    const pointerEnd = (event: PointerEvent) => {
+      if (event.pointerId === pointerId) release();
+    };
+    element.addEventListener("pointermove", pointerMove);
+    element.addEventListener("pointerdown", pointerDown);
+    element.addEventListener("pointerup", pointerEnd);
+    element.addEventListener("pointercancel", pointerEnd);
+    element.addEventListener("lostpointercapture", pointerEnd);
+    window.addEventListener("blur", release);
     const contextLost = (event: Event) => {
       event.preventDefault();
       fail();
     };
     document.addEventListener("visibilitychange", visibility);
     element.addEventListener("webglcontextlost", contextLost, true);
+    const importStart = performance.now();
     void import("./create-cut-scene")
-      .then((module) => module.createCutScene(element, abort.signal))
+      .then((module) => {
+        element.dataset.importMs = String(performance.now() - importStart);
+        return module.createCutScene(element, abort.signal);
+      })
       .then((value) => {
         window.clearTimeout(loadTimeout);
         if (abort.signal.aborted) {
@@ -133,7 +228,17 @@ export function FabricCutScene({
           return;
         }
         scene = value;
+        callbacks.current.onPrepared();
+        requestAnimationFrame(() => {
+          if (!abort.signal.aborted) {
+            element.dataset.firstShownNavigationMs = String(performance.now());
+            element.dataset.firstShownMs = String(
+              performance.now() - importStart,
+            );
+          }
+        });
         observer = new ResizeObserver(() => {
+          release();
           if (document.hidden) pendingResize = true;
           else scene?.resize();
         });
@@ -154,8 +259,13 @@ export function FabricCutScene({
       audio?.reset();
       cancelAnimationFrame(frame);
       observer?.disconnect();
-      dialog?.removeEventListener("pointermove", pointer);
-      dialog?.removeEventListener("pointerdown", pointer);
+      release();
+      element.removeEventListener("pointermove", pointerMove);
+      element.removeEventListener("pointerdown", pointerDown);
+      element.removeEventListener("pointerup", pointerEnd);
+      element.removeEventListener("pointercancel", pointerEnd);
+      element.removeEventListener("lostpointercapture", pointerEnd);
+      window.removeEventListener("blur", release);
       scene?.dispose();
       controller.current = null;
       document.removeEventListener("visibilitychange", visibility);
@@ -169,6 +279,15 @@ export function FabricCutScene({
       data-state="loading"
       className="rrc-cut-canvas"
       aria-hidden="true"
-    />
+    >
+      <svg
+        className="rrc-cloth-pointers"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path data-cloth-hit="top" className="rrc-cloth-hit" />
+        <path data-cloth-hit="bottom" className="rrc-cloth-hit" />
+      </svg>
+    </div>
   );
 }

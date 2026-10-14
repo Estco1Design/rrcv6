@@ -564,3 +564,27 @@ a:active,button:not(:disabled):active { opacity:.68; }
 
 .rrc-cut-sound { position: absolute; z-index: 4; top: calc(16px + env(safe-area-inset-top)); right: 24px; min-height: 44px; font-size: 9px; color: #ffffff70; }
 .rrc-cut-sound:disabled { color: #ffffff35; cursor: default; }
+
+.rrc-cloth-pointers { position:absolute; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+.rrc-cloth-hit { fill:transparent; pointer-events:none; user-select:none; touch-action:pinch-zoom; }
+.rrc-cut-canvas[data-interactive="true"] .rrc-cloth-hit { pointer-events:all; cursor:grab; }
+.rrc-cut-canvas[data-dragging="top"] [data-cloth-hit="top"], .rrc-cut-canvas[data-dragging="bottom"] [data-cloth-hit="bottom"] { cursor:grabbing!important; }
+.rrc-cut-canvas canvas { pointer-events:none; }
+.rrc-cut-canvas[data-state="loading"] { opacity:0; }
+
+@media(max-width:767px) { .rrc-cut-plate { background-image:url('/intro/cloth-plate-mobile.webp'); } }
+/* Once choreography finishes, protected HTML stays above the interactive canvas. */
+.rrc-cut-intro[data-intro-ready="true"] .rrc-cut-title { z-index:3; transform:translateY(-50%) translateZ(0); }
+.rrc-cut-controls { transform:translateX(-50%) translateZ(0); }
+.rrc-cut-replay,.rrc-cut-sound { transform:translateZ(0); }
+
+.rrc-cut-title,.rrc-cut-controls,.rrc-cut-replay,.rrc-cut-sound { will-change:transform; }
+
+.rrc-cut-intro[data-intro-ready="true"] .rrc-cut-title { background:#000; }
+/* Keep the HTML interaction plane distinct from WebGL/SVG compositor layers. */
+.rrc-cut-intro[data-intro-ready="true"] .rrc-cut-title { z-index:100; }
+.rrc-cut-controls { z-index:101; }
+.rrc-cut-sound,.rrc-cut-skip,.rrc-cut-replay { z-index:102; }
+/* SVG paths have no CSS layout box on mobile. Apply gesture policy to their
+   SVG ancestor; pointer-events:none keeps the aperture/menu outside that policy. */
+.rrc-cloth-pointers { touch-action:pinch-zoom; }
