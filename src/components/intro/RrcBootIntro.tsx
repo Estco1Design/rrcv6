@@ -20,8 +20,7 @@ export function RrcBootIntro() {
     [reduced, setReduced] = useState(true),
     [ready, setReady] = useState(false),
     [fallback, setFallback] = useState(false),
-    [replay, setReplay] = useState(0),
-    [preparing, setPreparing] = useState(true);
+    [replay, setReplay] = useState(0);
   const [audioAvailable, setAudioAvailable] = useState(false),
     [sound, setSound] = useState(false);
   const audio = useRef<CutAudio>();
@@ -191,9 +190,6 @@ export function RrcBootIntro() {
           transition={{ duration: reduced ? 0 : 0.3 }}
         >
           <DialogFocus />
-          {(fallback || preparing) && (
-            <div className="rrc-cut-plate" aria-hidden="true" />
-          )}
           <div
             className="rrc-cut-title"
             style={fallback || ready ? { clipPath: "none" } : undefined}
@@ -202,7 +198,7 @@ export function RrcBootIntro() {
           </div>
           {policyReady && !fallback && (
             <FabricCutScene
-              onPrepared={() => setPreparing(false)}
+              onPrepared={() => { /* Preparation remains black; no photographic placeholder. */ }}
               audio={audio.current}
               key={replay}
               final={ready}
@@ -315,7 +311,6 @@ export function RrcBootIntro() {
                     audio.current?.reset();
                     setReady(false);
                     setFallback(false);
-                    setPreparing(true);
                     setReplay((value) => value + 1);
                   }
                 } catch {
@@ -337,7 +332,6 @@ export function RrcBootIntro() {
                 audio.current?.reset();
                 setReady(false);
                 setFallback(false);
-                setPreparing(true);
                 setReplay((value) => value + 1);
               }}
             >

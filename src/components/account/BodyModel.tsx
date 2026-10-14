@@ -49,6 +49,10 @@ export default function BodyModel({
       setStatus("fallback");
       return;
     }
+    const disposeMaterial=(material:THREE.Material)=>{
+      for(const value of Object.values(material))if(value instanceof THREE.Texture){value.dispose();if(typeof ImageBitmap!=="undefined"&&value.image instanceof ImageBitmap)value.image.close();}
+      material.dispose();
+    };
     let alive = true,
       frame = 0;
     setStatus("loading");
@@ -58,7 +62,7 @@ export default function BodyModel({
     renderer.setClearColor(0xffffff, 1);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 0.95;
     element.appendChild(renderer.domElement);
     renderer.domElement.setAttribute("aria-hidden", "true");
     const studio = new RoomEnvironment(),
@@ -67,24 +71,16 @@ export default function BodyModel({
     scene.environment = environment.texture;
     studio.dispose();
     pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 1.1));
-    const light = new THREE.DirectionalLight(0xe9eef7, 3);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 0.45));
+    const light = new THREE.DirectionalLight(0xfff6ed, 1.8);
     light.position.set(2, 4, 3);
     scene.add(light);
-    const rim = new THREE.DirectionalLight(0xffffff, 1.2);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.6);
     rim.position.set(-2, 2, -3);
     scene.add(rim);
-    const fill = new THREE.DirectionalLight(0xffffff, 1.5);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.6);
     fill.position.set(-3, 2, 1);
     scene.add(fill);
-    const material = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff, vertexColors: true, metalness: 0,
-      roughness: 0.68, envMapIntensity: 0.45,
-    });
-    const privacyMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffffff, vertexColors: true, transparent: false,
-      opacity: 1, depthWrite: true,
-    });
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1.73, 0);
     controls.enablePan = false;
@@ -281,18 +277,16 @@ export default function BodyModel({
               const materials = Array.isArray(object.material)
                 ? object.material
                 : [object.material];
-              materials.forEach((m) => m.dispose());
+              materials.forEach(disposeMaterial);
             }
           });
           return;
         }
+        // Preserve native GLTF material maps and UVs rather than discarding skin.
         gltf.scene.traverse((object) => {
           if (object instanceof THREE.Mesh) {
-            const old = Array.isArray(object.material)
-              ? object.material
-              : [object.material];
-            old.forEach((m) => m.dispose());
-            object.material = object.name.includes("PixelPrivacy") || object.userData.censored ? privacyMaterial : material;
+            const materials=Array.isArray(object.material)?object.material:[object.material];
+            materials.forEach(m=>{if(m instanceof THREE.MeshStandardMaterial)m.envMapIntensity=.3;});
           }
         });
         gltf.scene.traverse((object) => {
@@ -353,11 +347,9 @@ export default function BodyModel({
           const materials = Array.isArray(object.material)
             ? object.material
             : [object.material];
-          materials.forEach((m) => m.dispose());
+          materials.forEach(disposeMaterial);
         }
       });
-      material.dispose();
-      privacyMaterial.dispose();
       environment.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

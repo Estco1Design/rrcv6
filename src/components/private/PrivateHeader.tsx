@@ -26,6 +26,7 @@ export function PrivateHeader() {
           >
             PRIVATE ACCESS
           </Link>
+          <Link href="/shop" className="ml-auto flex min-h-11 items-center text-[10px] text-white/70">{ru ? 'Каталог' : 'Shop'} ↗</Link>
           <button
             disabled={busy}
             className="text-[10px] min-h-11 shrink-0 text-white/60 hover:text-white"

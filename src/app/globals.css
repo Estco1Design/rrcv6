@@ -534,7 +534,6 @@ a:active,button:not(:disabled):active { opacity:.68; }
 
 /* One finite textile shot; text and controls remain real, accessible HTML. */
 .rrc-cut-intro { --intro-reveal:100%; position:fixed; inset:0; z-index:200; background:#000; color:#deddd8; isolation:isolate; overflow:hidden; }
-.rrc-cut-plate { position:absolute; inset:0; z-index:0; background:url('/intro/cloth-plate.webp') center / 100% 100% no-repeat; pointer-events:none; }
 .rrc-cut-title { position:absolute; top:48%; left:0; width:100%; z-index:1; text-align:center; transform:translateY(-50%); clip-path:inset(0 var(--intro-reveal) 0 0); pointer-events:none; }
 .rrc-cut-title h2 { margin:0; font-size:clamp(16px,2.48vw,48px); line-height:1.4; letter-spacing:.045em; white-space:nowrap; }
 .rrc-cut-canvas { position:absolute; inset:0; z-index:2; pointer-events:none; }
@@ -572,7 +571,6 @@ a:active,button:not(:disabled):active { opacity:.68; }
 .rrc-cut-canvas canvas { pointer-events:none; }
 .rrc-cut-canvas[data-state="loading"] { opacity:0; }
 
-@media(max-width:767px) { .rrc-cut-plate { background-image:url('/intro/cloth-plate-mobile.webp'); } }
 /* Once choreography finishes, protected HTML stays above the interactive canvas. */
 .rrc-cut-intro[data-intro-ready="true"] .rrc-cut-title { z-index:3; transform:translateY(-50%) translateZ(0); }
 .rrc-cut-controls { transform:translateX(-50%) translateZ(0); }

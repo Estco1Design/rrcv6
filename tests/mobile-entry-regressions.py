@@ -1,0 +1,19 @@
+"""Native browser regressions for private return, mobile menu and product hold."""
+from playwright.sync_api import sync_playwright,expect
+from pathlib import Path
+import shutil,json
+root=Path(__file__).resolve().parents[1];out=root/'qa';out.mkdir(exist_ok=True)
+with sync_playwright() as p:
+ b=p.chromium.launch(executable_path=shutil.which('chromium'),headless=True,args=['--no-sandbox'])
+ c=b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,reduced_motion='reduce');page=c.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ page.goto('http://127.0.0.1:3000');expect(page.locator('.rrc-cut-plate')).to_have_count(0)
+ page.get_by_role('button',name='PRIVATE ACCESS',exact=True).click();page.get_by_label('Код доступа',exact=True).fill('ESTCO');page.get_by_role('button',name='Войти',exact=True).click();page.wait_for_url('**/private');page.get_by_role('link',name='ПРОДОЛЖИТЬ',exact=True).click();page.wait_for_url('**/private/home')
+ page.locator('[data-rrc-private-header]').get_by_role('link',name='Каталог').click();page.wait_for_url('**/shop');expect(page.get_by_role('link',name='Вернуться в PRIVATE ACCESS',exact=True)).to_be_visible();expect(page.locator('[data-rrc-boot-intro]')).to_have_count(0)
+ menu=page.locator('[data-mobile-menu] button');expect(menu).to_contain_text('МЕНЮ');menu.click();expect(page.locator('#mobile-navigation a[href="/private/home"]')).to_be_visible();menu.click()
+ page.goto('http://127.0.0.1:3000/shop?section=archive');card=page.locator('[data-product-card]').first;card.scroll_into_view_if_needed();link=card.locator('a').first;box=link.bounding_box();x=box['x']+box['width']/2;y=box['y']+60
+ cdp=c.new_cdp_session(page);cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]});page.wait_for_timeout(550);expect(card.locator('[data-product-brief]')).to_be_visible();cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});expect(page).to_have_url('http://127.0.0.1:3000/shop?section=archive');page.screenshot(path=str(out/'product-long-press-mobile.png'));card.get_by_role('button',name='Закрыть информацию').click();expect(card.locator('[data-product-brief]')).to_have_count(0)
+ card.get_by_role('button',name='Краткая информация',exact=True).focus();page.keyboard.press('Enter');expect(card.locator('[data-product-brief]')).to_be_visible();page.keyboard.press('Escape');expect(card.locator('[data-product-brief]')).to_have_count(0)
+ box=link.bounding_box();x=box['x']+box['width']/2;y=box['y']+60;cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]});cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':x,'y':y-35}]});page.wait_for_timeout(500);cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});expect(card.locator('[data-product-brief]')).to_have_count(0)
+ page.get_by_role('link',name='Вернуться в PRIVATE ACCESS',exact=True).click();page.wait_for_url('**/private/home');page.locator('[data-rrc-private-header] button').click();page.wait_for_url('http://127.0.0.1:3000/');expect(page.locator('a[href="/private/home"]')).to_have_count(0);expect(page.locator('[data-rrc-boot-intro]')).to_have_count(0)
+ page.goto('http://127.0.0.1:3000/shop?section=archive');card=page.locator('[data-product-card]').first;card.locator('a').first.click();page.wait_for_url('**/product/**');assert not errors,errors
+ c.close();b.close();(out/'mobile-entry-regressions.json').write_text(json.dumps({'passed':['black fallback','private return in public header','private menu item','no repeated intro','touch hold brief','release does not navigate','keyboard brief / Escape','scroll cancels hold','private logout hides return','ordinary product tap'],'physical_phone':False,'errors':errors},indent=2));print('PASS mobile entry and product regressions')

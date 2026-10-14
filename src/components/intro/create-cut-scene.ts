@@ -35,16 +35,17 @@ export async function createCutScene(
 ): Promise<CutScene> {
   if (signal.aborted) throw new DOMException("Aborted", "AbortError");
   const started = performance.now();
+  const mobile = host.clientWidth < 768;
   const renderer = new THREE.WebGLRenderer({
     alpha: true,
-    antialias: true,
+    antialias: !mobile,
     powerPreference: "low-power",
   });
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !mobile;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.domElement.setAttribute("aria-hidden", "true");
   host.appendChild(renderer.domElement);
@@ -59,14 +60,13 @@ export async function createCutScene(
   let physicsClock = 0,
     interactive = false,
     prepared = false;
-  const mobile = host.clientWidth < 768;
   const profile = {
-    columns: mobile ? 96 : 128,
-    rows: mobile ? 40 : 48,
+    columns: mobile ? 80 : 128,
+    rows: mobile ? 36 : 48,
     physicsColumns: 24,
     physicsRows: 20,
-    pixels: mobile ? 620_000 : 1_100_000,
-    dpr: mobile ? 1.35 : 1.3,
+    pixels: mobile ? 480_000 : 1_100_000,
+    dpr: mobile ? 1.25 : 1.3,
   };
   host.dataset.profile = mobile ? "mobile" : "desktop";
   const timings: Record<string, number> = {};
@@ -243,7 +243,7 @@ export async function createCutScene(
     scene.add(ambient);
     const key = new THREE.DirectionalLight(0xfffaf3, 1.4);
     key.position.set(-2, 2, 0.65);
-    key.castShadow = true;
+    key.castShadow = !mobile;
     key.shadow.mapSize.set(mobile ? 512 : 1024, mobile ? 512 : 1024);
     key.shadow.radius = 3;
     key.shadow.bias = -0.00006;
@@ -261,11 +261,11 @@ export async function createCutScene(
       metalness: 0,
       ior: 1.45,
       specularIntensity: 0.25,
-      sheen: 0.5,
+      sheen: mobile ? 0 : 0.5,
       sheenColor: new THREE.Color(0.07, 0.07, 0.075),
       sheenRoughness: 1,
-      envMap: studio,
-      envMapIntensity: 0.4,
+      envMap: mobile ? null : studio,
+      envMapIntensity: mobile ? 0 : 0.4,
       side: THREE.DoubleSide,
     });
     // R/G contain photographed normal XY; B contains measured roughness.
@@ -463,7 +463,7 @@ export async function createCutScene(
         (at(0, 0) * (1 - tx) + at(1, 0) * tx) * (1 - ty) +
         (at(0, 1) * (1 - tx) + at(1, 1) * tx) * ty;
       return (
-        upper + lower + 0.4 * (gatherLeft + gatherRight) - valley + secondary
+        1.45 * (upper + lower) + 0.8 * (gatherLeft + gatherRight) - valley + 0.4 * secondary
       );
     }
     function render(
@@ -485,7 +485,7 @@ export async function createCutScene(
       ambient.intensity = 0.06 * shot.light;
       key.intensity = 4 * shot.light;
 
-      cloth.envMapIntensity = 0.4 * shot.light;
+      cloth.envMapIntensity = mobile ? 0 : 0.4 * shot.light;
       uncutMaterial.envMapIntensity = 0.4 * shot.light;
       const scale = aspect * SHEAR_WIDTH_RATIO;
       const initialRoot = 0.04 - (bladeContactOpen() * SHEAR_WIDTH_RATIO) / 2;

@@ -53,7 +53,7 @@ def blade(sign,depth,parent):
   for (a,ya),(b,yb) in zip(knots,knots[1:]):
    if x<=b:return ya+(yb-ya)*(x-a)/(b-a)
   return knots[-1][1]
- top=[(-.055,.09),(.18,.173 if sign>0 else .158),(.55,.14 if sign>0 else .128),(1.48,-.01684)]
+ top=[(-.055,.09),(.18,.173 if sign>0 else .158),(.55,.14 if sign>0 else .128),(1.48,-.01484)]
  bottom=[(-.055,-.03),(.18,-.047),(1.43,-.018),(1.48,-.01684)]
  lanes=[0,.035,.12,.28,.48,.68,.86,1];verts=[]
  for side in [-1,1]:
@@ -66,7 +66,7 @@ def blade(sign,depth,parent):
     # faces remain .227 / .225; honing is the real surface, not an extra mesh.
     sharp=.226+(sign*.001 if side==sign else 0)
     t=min(1,v/.12);z=sharp*(1-t)+ordinary*t
-    tip=max(0,min(1,(1.48-x)/.065));z=sharp*(1-tip)+z*tip
+    tip=max(.06,min(1,(1.48-x)/.065));z=sharp*(1-tip)+z*tip
     verts.append((x,sign*(lo+(hi-lo)*v),z))
  stride=len(lanes);count=len(xs)*stride;faces=[];polished=[]
  for layer in range(2):

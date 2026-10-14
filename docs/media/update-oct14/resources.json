@@ -1,0 +1,74 @@
+[
+  {
+    "file": "public/models/fit-female.glb",
+    "bytes": 3594096,
+    "sha256": "96303467472ab823af91061d7505e2195aeb8118e05840dc967c5b305a249943",
+    "nodes": [
+      "RRC_female_adult_reference",
+      "Adult eyes"
+    ],
+    "embedded_images": 2,
+    "has_native_uv": true,
+    "eye_alpha_mode": "MASK"
+  },
+  {
+    "file": "public/models/fit-male.glb",
+    "bytes": 4950256,
+    "sha256": "9508c561e495e4d3a39bd7bc1010e96603ed345f1181c8215ec0abe8a95ff972",
+    "nodes": [
+      "RRC_male_adult_reference",
+      "Adult eyes"
+    ],
+    "embedded_images": 3,
+    "has_native_uv": true,
+    "eye_alpha_mode": "MASK"
+  },
+  {
+    "file": "public/intro/suiting-scan-color-mobile.webp",
+    "bytes": 283834,
+    "sha256": "09b522c593dc4039f67733c9e389387c3f55917bda6dd3e7b24de1c44fd89c97"
+  },
+  {
+    "file": "public/intro/suiting-scan-color-desktop.webp",
+    "bytes": 713076,
+    "sha256": "16a575f205103115dcf7f113caf90f13d73bfafd648d73df1601fd2f82aea50d"
+  },
+  {
+    "file": "public/intro/suiting-scan-surface-desktop.webp",
+    "bytes": 5910860,
+    "sha256": "86b0c31d1e5a15469b7bf7b2304834794dbf712a2be010ff5f2340a50f11fc30"
+  },
+  {
+    "file": "public/intro/suiting-scan-surface-mobile.webp",
+    "bytes": 1846654,
+    "sha256": "7c45d322db78aefcd30b02bafc7678271e26f9dd4873fdaa4fcec314ac14d6be"
+  },
+  {
+    "file": "public/intro/titanium-shears-mobile.glb",
+    "bytes": 565044,
+    "sha256": "82948f4d508a13d6b6e144a7cb02dbc07899a0af83a8af94ebaf0ebf026c6215",
+    "nodes": [
+      "UpperForgedArm",
+      "UpperArm",
+      "LowerForgedArm",
+      "LowerArm",
+      "SharedPivot"
+    ],
+    "embedded_images": 0,
+    "has_native_uv": null
+  },
+  {
+    "file": "public/intro/titanium-shears.glb",
+    "bytes": 858132,
+    "sha256": "47f532648ebb917f70b9504952e024c6a34459f8b1f4d93f14d3caf7a983ede0",
+    "nodes": [
+      "UpperForgedArm",
+      "UpperArm",
+      "LowerForgedArm",
+      "LowerArm",
+      "SharedPivot"
+    ],
+    "embedded_images": 0,
+    "has_native_uv": null
+  }
+]

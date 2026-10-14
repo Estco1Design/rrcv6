@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ShoppingBag, Menu, Search, Heart } from "lucide-react";
+import { ShoppingBag, Menu, Search, Heart, LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
@@ -128,6 +128,7 @@ export function Header() {
           <div className="flex shrink-0 flex-col items-end gap-2">
             {/* Top row: RU/EN + wishlist + cart */}
             <div className="flex items-center justify-end gap-3 md:gap-5">
+              {privateActive && <Link href="/private/home" aria-label={language==='ru'?'Вернуться в PRIVATE ACCESS':'Return to PRIVATE ACCESS'} className="flex min-h-11 min-w-11 items-center justify-center text-rrc-silver"><LockKeyhole className="h-4 w-4"/><span className="hidden lg:inline ml-2 text-[9px] tracking-widest">PRIVATE ACCESS</span></Link>}
               <button
                 onClick={handleLangToggle}
                 className="-m-2 cursor-pointer p-2 text-t-ui tracking-widest text-rrc-white hover:text-rrc-silver transition-colors hidden md:block"
