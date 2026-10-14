@@ -1,205 +1,354 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLanguage } from "@/i18n";
 import { DialogFocus } from "@/components/ui/DialogFocus";
 import { PrivateCodeForm } from "@/components/private/PrivateCodeForm";
-const SculptureIntro = dynamic(() => import("./SculptureIntro"), {
-  ssr: false,
-});
-const ease = [0.22, 1, 0.36, 1] as const;
+import { markPublicEntry } from "@/components/private/PrivateSessionProvider";
+import { usePathname } from "next/navigation";
+import { CutAudio, type CutAudioFiles } from "./cut-audio";
+import { FabricCutScene } from "./FabricCutScene";
+const word = "RICHRUSSIANCOMMUNITY",
+  playedKey = "rrc_cut_played";
 export function RrcBootIntro() {
-  const { language } = useLanguage();
-  const ru = language === "ru";
-  const [visible, setVisible] = useState(false),
+  const { language } = useLanguage(),
+    ru = language === "ru";
+  const pathname = usePathname();
+  const [policyReady, setPolicyReady] = useState(false);
+  const [visible, setVisible] = useState(pathname === "/"),
     [mode, setMode] = useState<"entry" | "code">("entry"),
     [reduced, setReduced] = useState(true),
-    [playing, setPlaying] = useState(true);
-  const returnFocus = useRef<HTMLButtonElement>(null);
-  const restoreFocus = useRef(false);
+    [ready, setReady] = useState(false),
+    [fallback, setFallback] = useState(false),
+    [replay, setReplay] = useState(0),
+    [preparing, setPreparing] = useState(true);
+  const [audioAvailable, setAudioAvailable] = useState(false),
+    [sound, setSound] = useState(false);
+  const audio = useRef<CutAudio>();
+  const [soundPreferred, setSoundPreferred] = useState(false);
   useEffect(() => {
-    if (window.location.pathname !== "/") return;
     try {
-      if (sessionStorage.getItem("rrc_intro_seen") === "true") return;
+      setSoundPreferred(localStorage.getItem("rrc_intro_sound") === "on");
+    } catch {}
+    const abort = new AbortController();
+    void fetch("/intro/audio/manifest.json", { signal: abort.signal })
+      .then((r) => r.json())
+      .then((files: CutAudioFiles) => {
+        if (abort.signal.aborted) return;
+        if (
+          ["hinge", "close", "cut", "rustle"].every(
+            (key) => typeof files[key as keyof CutAudioFiles] === "string",
+          )
+        ) {
+          audio.current = new CutAudio(files);
+          setAudioAvailable(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      abort.abort();
+      audio.current?.dispose();
+    };
+  }, []);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (mode === "entry") root.current?.scrollTo(0, 0);
+  }, [mode]);
+  const back = useRef<HTMLButtonElement>(null),
+    entry = useRef<HTMLButtonElement>(null),
+    restore = useRef(false),
+    focusAfterFinish = useRef(false),
+    started = useRef(false);
+  const finish = useCallback(() => {
+    try {
+      sessionStorage.setItem(playedKey, "true");
     } catch {
-      /* Optional storage. */
+      /* Animation state only. */
+    }
+    setReady(true);
+    if (
+      focusAfterFinish.current ||
+      document.activeElement?.classList.contains("rrc-cut-skip")
+    ) {
+      focusAfterFinish.current = false;
+      requestAnimationFrame(() =>
+        entry.current?.focus({ preventScroll: true }),
+      );
+    }
+  }, []);
+  useEffect(() => {
+    if (pathname !== "/") {
+      audio.current?.stop();
+      setVisible(false);
+      return;
+    }
+    try {
+      if (sessionStorage.getItem("rrc_intro_seen") === "true") {
+        setVisible(false);
+        return;
+      }
+      if (!started.current) {
+        started.current = true;
+        if (sessionStorage.getItem(playedKey) === "true") {
+          setFallback(false);
+          setReady(true);
+        } else sessionStorage.setItem(playedKey, "true");
+      }
+    } catch {
+      /* Storage is optional. */
     }
     const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduced(media.matches);
+    const sync = () => {
+      setReduced(media.matches);
+      if (media.matches) {
+        setFallback(true);
+        finish();
+      }
+    };
     sync();
     media.addEventListener("change", sync);
+    setPolicyReady(true);
     setVisible(true);
     return () => media.removeEventListener("change", sync);
-  }, []);
+  }, [finish, pathname]);
   const close = useCallback(() => {
     try {
       sessionStorage.setItem("rrc_intro_seen", "true");
+      sessionStorage.setItem(playedKey, "true");
     } catch {
       /* Optional storage. */
     }
     window.dispatchEvent(new Event("rrc:enter"));
+    audio.current?.stop();
     setVisible(false);
   }, []);
+  const enterPublic = useCallback(() => {
+    markPublicEntry();
+    void fetch("/api/private-access/logout", { method: "POST" }).catch(() => {
+      /* Server guards remain in place. */
+    });
+    close();
+  }, [close]);
+  const skip = useCallback(() => {
+    focusAfterFinish.current = true;
+    audio.current?.stop();
+    setSound(false);
+    setFallback(true);
+    finish();
+  }, [finish]);
   useEffect(() => {
     if (!visible) return;
-    const root = document.documentElement;
-    const previous = root.style.overflow;
-    root.style.overflow = "hidden";
+    // Focus the scene container, keeping the resting menu visually quiet.
+    // Tab still reaches Skip during playback and both entrances at the end.
+    const frame = requestAnimationFrame(() =>
+      root.current?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
+  useEffect(() => {
+    if (!visible) return;
+    const html = document.documentElement,
+      previous = html.style.overflow;
+    html.style.overflow = "hidden";
     return () => {
-      root.style.overflow = previous;
+      html.style.overflow = previous;
     };
   }, [visible]);
   useEffect(() => {
     if (!visible) return;
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
         if (mode === "code") {
-          restoreFocus.current=true;
+          restore.current = true;
           setMode("entry");
-        } else close();
+        } else if (!ready) skip();
+        else enterPublic();
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [visible, mode, close]);
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [mode, visible, enterPublic, ready, skip]);
+  const failure = useCallback(() => {
+    setFallback(true);
+    finish();
+  }, [finish]);
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          data-rrc-boot-intro=""
+          ref={root}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          aria-label="RICHRUSSIANCOMMUNITY"
-          className="fixed inset-0 z-[200] bg-[#070709] overflow-y-auto"
+          aria-label={word}
+          data-rrc-boot-intro=""
+          data-intro-ready={ready}
+          data-intro-mode={mode}
+          data-intro-fallback={fallback}
+          className="rrc-cut-intro"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reduced ? 0 : 0.5, ease }}
+          transition={{ duration: reduced ? 0 : 0.3 }}
         >
           <DialogFocus />
-          <div className="relative flex min-h-[100svh] flex-col items-center justify-between px-5 pt-6 pb-[max(24px,env(safe-area-inset-bottom))] sm:px-10 sm:pt-8">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,#251923_0%,#070709_70%)]"
-            />
-            <SculptureIntro
-              playing={playing && mode === "entry"}
-              reduced={reduced}
-            />
-            <div className="relative z-10 flex w-full items-center justify-between gap-4">
-              <span className="font-mono text-[10px] tracking-[.18em] text-rrc-silver">
-                RICHRUSSIANCOMMUNITY
-              </span>
-              <button
-                type="button"
-                onClick={close}
-                className="min-h-11 px-3 text-xs text-rrc-off hover:text-white"
-              >
-                {ru ? "Пропустить" : "Skip"}
-              </button>
-            </div>
-            <div className="relative z-10 pointer-events-none flex flex-1 items-start pt-[12vh] sm:pt-[10vh] text-center">
-              <motion.div
-                initial={reduced ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease }}
-              >
-                <h1 className="font-display text-[clamp(18px,3vw,32px)] font-light text-rrc-white tracking-[.12em]">
-                  {ru ? "Форма вне правил." : "Form beyond rules."}
-                </h1>
-                <p className="mt-3 font-mono text-[10px] text-rrc-off">
-                  RRC / EST. 2026
-                </p>
-              </motion.div>
-            </div>
-            <div className="relative z-10 w-full max-w-[440px] pb-3 sm:pb-6">
-              <AnimatePresence mode="wait">
-                {mode === "entry" ? (
-                  <motion.div
-                    key="entry"
-                    onAnimationComplete={()=>{if(restoreFocus.current){restoreFocus.current=false;returnFocus.current?.focus();}}}
-                    initial={reduced ? false : { opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: reduced ? 0 : 0.45,
-                      delay: reduced ? 0 : 0.25,
-                      ease,
-                    }}
-                  >
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={close}
-                        className="rrc-intro-entry min-h-14 bg-rrc-white text-rrc-black px-5 text-[11px] tracking-[.12em] hover:bg-rrc-silver"
-                      >
-                        {ru ? "ВОЙТИ НА САЙТ" : "ENTER THE SITE"}
-                      </button>
-                      <button
-                        ref={returnFocus}
-                        type="button"
-                        onClick={() => setMode("code")}
-                        className="rrc-intro-entry min-h-14 border border-white/30 bg-black/30 backdrop-blur-sm px-5 text-[11px] tracking-[.1em] hover:border-white/70"
-                      >
-                        {ru ? "ВНУТРЕННИЙ КРУГ" : "INNER CIRCLE"}
-                      </button>
-                    </div>
-                    <div className="mt-5 flex items-center justify-between gap-3 text-[10px] text-rrc-off">
-                      <span>
-                        {ru
-                          ? "Одежда. Люди. Свой круг."
-                          : "Garments. People. Your circle."}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setPlaying((p) => !p)}
-                        className="min-h-11 px-2 hover:text-white"
-                        aria-pressed={!playing}
-                      >
-                        {playing
-                          ? ru
-                            ? "Остановить движение"
-                            : "Pause motion"
-                          : ru
-                            ? "Продолжить движение"
-                            : "Resume motion"}
-                      </button>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="code"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: reduced ? 0 : 0.25 }}
-                    className="border border-white/15 bg-black/85 p-6 backdrop-blur-md"
-                  >
-                    <div className="flex items-center justify-between gap-4 mb-6">
-                      <h2 className="font-display text-lg">
-                        {ru ? "Внутренний круг" : "Inner Circle"}
-                      </h2>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          restoreFocus.current=true;
-                          setMode("entry");
-                        }}
-                        className="min-h-11 text-xs text-rrc-off hover:text-white"
-                      >
-                        {ru ? "Назад" : "Back"}
-                      </button>
-                    </div>
-                    <PrivateCodeForm
-                      variant="overlay"
-                      ru={ru}
-                      onSuccess={close}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          {(fallback || preparing) && (
+            <div className="rrc-cut-plate" aria-hidden="true" />
+          )}
+          <div
+            className="rrc-cut-title"
+            style={fallback || ready ? { clipPath: "none" } : undefined}
+          >
+            <h2 className="font-display font-light">{word}</h2>
           </div>
+          {policyReady && !fallback && (
+            <FabricCutScene
+              onPrepared={() => setPreparing(false)}
+              audio={audio.current}
+              key={replay}
+              final={ready}
+              onComplete={finish}
+              onFailure={failure}
+            />
+          )}
+          <div
+            className={`rrc-cut-controls ${mode === "code" ? "rrc-cut-controls-code" : ""}`}
+            style={{
+              opacity: ready ? 1 : "var(--intro-menu,0)",
+              transitionDuration: "0ms",
+              pointerEvents: ready ? "auto" : "none",
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {mode === "entry" ? (
+                <motion.div
+                  key="entry"
+                  className="rrc-cut-entries"
+                  onAnimationComplete={() => {
+                    if (restore.current) {
+                      restore.current = false;
+                      back.current?.focus();
+                    }
+                  }}
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.18 }}
+                >
+                  <button
+                    ref={entry}
+                    type="button"
+                    disabled={!ready}
+                    onClick={enterPublic}
+                  >
+                    {ru ? "ВОЙТИ" : "ENTER"}
+                  </button>
+                  <button
+                    ref={back}
+                    type="button"
+                    disabled={!ready}
+                    onClick={() => setMode("code")}
+                  >
+                    PRIVATE ACCESS
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="code"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: reduced ? 0 : 0.18 }}
+                  className="rrc-cut-code"
+                >
+                  <PrivateCodeForm
+                    variant="overlay"
+                    ru={ru}
+                    onSuccess={close}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      restore.current = true;
+                      setMode("entry");
+                    }}
+                    className="mt-3 min-h-11 w-full text-center text-[10px] text-white/55 tracking-[.18em] hover:text-white"
+                  >
+                    {ru ? "НАЗАД" : "BACK"}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          <button
+            type="button"
+            className="rrc-cut-sound"
+            disabled={!audioAvailable || reduced}
+            aria-pressed={sound}
+            title={
+              !audioAvailable
+                ? ru
+                  ? "Записи звука пока не подключены"
+                  : "Recorded audio is not yet available"
+                : soundPreferred && !sound
+                  ? ru
+                    ? "Нажмите для включения сохранённого выбора"
+                    : "Click to enable your saved sound preference"
+                  : undefined
+            }
+            onClick={async () => {
+              if (sound) {
+                audio.current?.stop();
+                setSound(false);
+                setSoundPreferred(false);
+                try {
+                  localStorage.setItem("rrc_intro_sound", "off");
+                } catch {}
+              } else {
+                try {
+                  await audio.current?.enable();
+                  setSound(true);
+                  setSoundPreferred(true);
+                  try {
+                    localStorage.setItem("rrc_intro_sound", "on");
+                  } catch {}
+                  if (ready) {
+                    audio.current?.reset();
+                    setReady(false);
+                    setFallback(false);
+                    setPreparing(true);
+                    setReplay((value) => value + 1);
+                  }
+                } catch {
+                  setSound(false);
+                  audio.current?.stop();
+                }
+              }
+            }}
+          >
+            {ru
+              ? `Звук: ${sound ? "вкл" : "выкл"}`
+              : `Sound: ${sound ? "on" : "off"}`}
+          </button>
+          {ready && !reduced && mode === "entry" && (
+            <button
+              type="button"
+              className="rrc-cut-replay"
+              onClick={() => {
+                audio.current?.reset();
+                setReady(false);
+                setFallback(false);
+                setPreparing(true);
+                setReplay((value) => value + 1);
+              }}
+            >
+              {ru ? "Повторить" : "Replay"}
+            </button>
+          )}
+          {!ready && (
+            <button type="button" onClick={skip} className="rrc-cut-skip">
+              {ru ? "Пропустить" : "Skip"}
+            </button>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

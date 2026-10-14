@@ -1,0 +1,14 @@
+{
+  "source": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenCloth",
+  "author": "Microsoft",
+  "license": "CC0-1.0",
+  "source_binary_sha256": "4ed1f49797ce52b9f653b8650a31fa249fac99524303b0e153804365fb7e45b1",
+  "source_vertices": 58081,
+  "dimensions": [
+    257,
+    257
+  ],
+  "runtime_bytes": 264196,
+  "runtime_sha256": "4350fe8850bee233bc787c4a0985467ad347ff9ad7fc068f23535a737e2bc65d",
+  "usage": "Only Maya-simulated shape/UV data; procedural Substance Designer material NOT used. Residual Y gathers resampled in UV space, scaled and bounded to 0.19 scene units."
+}

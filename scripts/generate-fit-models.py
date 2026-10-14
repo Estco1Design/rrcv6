@@ -1,75 +1,95 @@
-"""Create original atelier mannequins. Run: blender -b --python scripts/generate-fit-models.py
-The GLB assets are shipped; Blender is only required to edit/regenerate the sculpture.
+"""Adult CC0 anatomical references, permanently censored before export.
+Run: blender -b --threads 4 --python scripts/generate-fit-models.py
+The mesh and target sources are retained under scripts/model-source (CC0).
 """
-import bpy,math
+import bpy,math,json,random
 from pathlib import Path
 from mathutils import Vector
-root=Path(__file__).resolve().parents[1]
+root=Path(__file__).resolve().parents[1];source=root/'scripts/model-source'
 
-def ellipsoid(name,center,scale):
- bpy.ops.mesh.primitive_uv_sphere_add(segments=32,ring_count=20,location=center)
- ob=bpy.context.object;ob.name=name;ob.scale=scale;bpy.ops.object.transform_apply(location=False,rotation=False,scale=True);return ob
+def read_source():
+ verts=[];uv=[];faces=[];group=''
+ for line in (source/'base.obj').read_text().splitlines():
+  if line.startswith('v '):verts.append(Vector(tuple(float(x) for x in line.split()[1:4])))
+  elif line.startswith('vt '):uv.append(tuple(float(x) for x in line.split()[1:3]))
+  elif line.startswith('g '):group=line[2:].strip()
+  elif line.startswith('f ') and group=='body':faces.append(tuple(int(x.split('/')[0])-1 for x in line.split()[1:]))
+ return verts,faces
 
-def loft(name,sections):
- # Interpolate the anatomical sections before meshing: no angular chest/waist bands.
- original=sections;sections=[]
- for j in range(len(original)-1):
-  a=original[max(j-1,0)];b=original[j];c=original[j+1];d=original[min(j+2,len(original)-1)]
-  for k in range(6):
-   t=k/6
-   sections.append(tuple(.5*((2*b[i])+(-a[i]+c[i])*t+(2*a[i]-5*b[i]+4*c[i]-d[i])*t*t+(-a[i]+3*b[i]-3*c[i]+d[i])*t*t*t) for i in range(5)))
- sections.append(original[-1])
- verts=[];faces=[];n=48
- for x,y,z,rx,rz in sections:
-  for i in range(n):
-   t=i/n*math.tau;verts.append((x+rx*math.cos(t),y,z+rz*math.sin(t)))
- for j in range(len(sections)-1):
-  for i in range(n):faces.append((j*n+i,j*n+(i+1)%n,(j+1)*n+(i+1)%n,(j+1)*n+i))
- faces.append(tuple(range(n-1,-1,-1)));faces.append(tuple((len(sections)-1)*n+i for i in range(n)))
- mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update();ob=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(ob);return ob
+def target(verts,name,weight):
+ for line in (source/name).read_text().splitlines():
+  if not line.strip() or line.startswith('#'):continue
+  idx,x,y,z=line.split();verts[int(idx)]+=Vector((float(x)*weight,float(y)*weight,float(z)*weight))
+
+def censor_region(v):
+ x,y,z=v
+ return (y>2.98 and z>-.005) or (2.30<y<2.68 and abs(x)<.49) or (1.32<y<1.92 and abs(x)<.49)
 
 def make(kind):
  bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False)
- female=kind=='female';parts=[]
- shoulder=.34 if female else .405
- torso=[(0,1.48,0,.12,.11),(0,1.60,0,.27,.17),(0,1.74,-.01,.335 if female else .29,.205),(0,1.90,0,.29 if female else .275,.185),(0,2.06,0,.22 if female else .245,.15),(0,2.22,0,.245 if female else .29,.175),(0,2.38,0,.29 if female else .345,.205),(0,2.53,0,.315 if female else .375,.20),(0,2.65,0,shoulder,.18),(0,2.75,0,.25,.13),(0,2.81,0,.115,.105)]
- parts.append(loft('Torso',torso));parts.append(ellipsoid('Neck',(0,2.88,0),(.108,.16,.105)))
- parts.append(ellipsoid('Cranium',(0,3.16,-.005),(.163,.238,.174)))
- parts.append(ellipsoid('Jaw',(0,3.02,.042),(.123,.115,.112)))
- # Featureless couture head: a quiet facial plane, no photorealistic identity.
- parts.append(ellipsoid('Face',(0,3.12,.095),(.119,.175,.10)))
- for side in [-1,1]:
-  if female:parts.append(ellipsoid('Chest',(side*.145,2.43,.14),(.14,.15,.09)))
-  parts.append(ellipsoid('Scapula',(side*.18,2.48,-.12),(.16,.19,.09)))
-  parts.append(ellipsoid('Seat',(side*.145,1.72,-.105),(.19 if female else .16,.205,.17)))
-  parts.append(ellipsoid('Deltoid',(side*shoulder,2.60,0),(.13 if female else .15,.17,.135)))
-  # Lofted limbs follow the subtle A-pose with tapered elbow/wrist articulation.
-  parts.append(loft('Arm',[(side*(shoulder+.01),2.65,0,.115,.115),(side*(shoulder+.065),2.48,0,.11,.115),(side*(shoulder+.12),2.25,.005,.086,.09),(side*(shoulder+.15),2.13,.008,.071,.075),(side*(shoulder+.175),2.00,.015,.082,.083),(side*(shoulder+.21),1.80,.02,.065,.061),(side*(shoulder+.235),1.66,.03,.047,.044)]))
-  wrist=shoulder+.235
-  parts.append(ellipsoid('Palm',(side*(wrist+.025),1.56,.032),(.066,.115,.04)))
-  for i in range(4):
-   xx=side*(wrist-.023+i*.032);yy=1.43+(abs(i-1.3)*.018)
-   parts.append(ellipsoid('Finger',(xx,yy,.038),(.014,.08-abs(i-1.3)*.009,.014)))
-  parts.append(ellipsoid('Thumb',(side*(wrist-.064),1.535,.038),(.033,.065,.027)))
-  parts.append(loft('Leg',[(side*.165,1.72,-.005,.17 if female else .155,.17),(side*.17,1.54,0,.169,.176),(side*.19,1.30,.006,.144,.148),(side*.20,1.08,.02,.102,.103),(side*.20,.93,.016,.088,.093),(side*.21,.79,-.025,.107,.11),(side*.215,.63,-.036,.108,.11),(side*.215,.43,-.015,.085,.085),(side*.215,.19,.015,.052,.06)]))
-  parts.append(ellipsoid('Patella',(side*.20,.94,.065),(.079,.085,.06)))
-  parts.append(ellipsoid('Foot',(side*.215,.105,.10),(.085,.085,.18)))
-  for i in range(5):parts.append(ellipsoid('Toe',(side*(.165+i*.022),.075,.235-abs(i)*.01),(.025,.034,.056-i*.004)))
- bpy.ops.object.select_all(action='DESELECT')
- for ob in parts:ob.select_set(True)
- bpy.context.view_layer.objects.active=parts[0];bpy.ops.object.join();body=bpy.context.object;body.name='RRC_'+kind+'_couture_sculpture'
- # A single watertight remesh removes intersecting primitive seams; smooth is a sculpting pass.
- mod=body.modifiers.new('Continuous anatomy','REMESH');mod.mode='VOXEL';mod.voxel_size=.009;mod.use_smooth_shade=True;bpy.ops.object.modifier_apply(modifier=mod.name)
- mod=body.modifiers.new('Sculpt polish','SMOOTH');mod.factor=.85;mod.iterations=12;bpy.ops.object.modifier_apply(modifier=mod.name)
- mod=body.modifiers.new('Mobile topology','DECIMATE');mod.ratio=.42;bpy.ops.object.modifier_apply(modifier=mod.name)
- for poly in body.data.polygons:poly.use_smooth=True
- # We model with vertical Y for Three.js; GLTF exporter converts Blender's Z up, so rotate geometry.
- for vertex in body.data.vertices:
-  x,y,z=vertex.co;vertex.co=(x,-z,y)
- body.data.update()
- mat=bpy.data.materials.new('RRC graphite ceramic');mat.diffuse_color=(.19,.20,.215,1);mat.use_nodes=True
- bsdf=mat.node_tree.nodes.get('Principled BSDF');bsdf.inputs['Base Color'].default_value=(.19,.20,.215,1);bsdf.inputs['Metallic'].default_value=.88;bsdf.inputs['Roughness'].default_value=.24;body.data.materials.append(mat)
- dest=root/'public/models'/f'fit-{kind}.glb';dest.parent.mkdir(parents=True,exist_ok=True)
- bpy.ops.export_scene.gltf(filepath=str(dest),export_format='GLB',use_selection=True,export_apply=True,export_yup=True)
- print(kind,'vertices',len(body.data.vertices),'bytes',dest.stat().st_size)
+ verts,faces=read_source()
+ for race in ['african','asian','caucasian']:target(verts,f'{race}-{kind}-young.target',1/3)
+ target(verts,f'universal-{kind}-young-averagemuscle-averageweight.target',1)
+ if kind=='female':target(verts,'female-young-averagemuscle-averageweight-averagecup-maxfirmness.target',.5)
+ used=set(i for face in faces for i in face);low=min(verts[i].y for i in used);high=max(verts[i].y for i in used);scale=3.4/(high-low)
+ normalized=[Vector((v.x*scale,(v.y-low)*scale,v.z*scale)) for v in verts]
+ # Center the torso, not the forward-reaching toes.
+ torso=[v.z for i,v in enumerate(normalized) if i in used and 2.0<v.y<2.7 and abs(v.x)<.4]
+ centre=(min(torso)+max(torso))/2
+ for v in normalized:v.z-=centre
+ def slice_guide(y,max_x=.48):
+  points=[normalized[i] for i in used if abs(normalized[i].y-y)<.035 and abs(normalized[i].x)<max_x]
+  if not points:return {'y':y,'rx':.3,'rz':.23,'z':0}
+  return {'y':y,'rx':max(abs(v.x) for v in points)+.025,'rz':(max(v.z for v in points)-min(v.z for v in points))/2+.025,'z':(max(v.z for v in points)+min(v.z for v in points))/2}
+ guides={key:slice_guide(y) for key,y in [('neck',2.92),('chest',2.52),('waist',2.09),('hips',1.76)]}
+ # Faces under the mosaic are discarded. Exporting the GLB does not reveal an uncensored mesh.
+ visible_faces=[]
+ for face in faces:
+  centroid=sum((normalized[i] for i in face),Vector())/len(face)
+  if not censor_region(centroid):visible_faces.append(face)
+ mesh=bpy.data.meshes.new(kind+'_anatomy');mesh.from_pydata([(v.x,-v.z,v.y) for v in normalized],[],visible_faces);mesh.update();body=bpy.data.objects.new('RRC_'+kind+'_adult_reference',mesh);bpy.context.collection.objects.link(body)
+ bpy.context.view_layer.objects.active=body;body.select_set(True)
+ # Keep smooth anatomical curvature and the original hands/feet topology.
+ sub=body.modifiers.new('Anatomical surface','SUBSURF');sub.levels=1;sub.render_levels=1;bpy.ops.object.modifier_apply(modifier=sub.name)
+ for polygon in body.data.polygons:polygon.use_smooth=True
+ colors=body.data.color_attributes.new(name='Skin',type='FLOAT_COLOR',domain='POINT')
+ random.seed(71 if kind=='male' else 92)
+ for i,vertex in enumerate(body.data.vertices):
+  x,y,z=vertex.co
+  variation=.012*math.sin(x*68+z*73)+.008*math.sin(z*157)+random.uniform(-.005,.005)
+  # Subtle dermal color variation; no painted identity or uncensored facial texture.
+  colors.data[i].color=(.60+variation,.39+variation*.6,.29+variation*.4,1)
+ skin=bpy.data.materials.new('Adult reference skin');skin.use_nodes=True
+ nodes=skin.node_tree.nodes;bsdf=nodes.get('Principled BSDF');attr=nodes.new('ShaderNodeVertexColor');attr.layer_name='Skin';skin.node_tree.links.new(attr.outputs['Color'],bsdf.inputs['Base Color']);bsdf.inputs['Roughness'].default_value=.67;bsdf.inputs['Subsurface Weight'].default_value=.05;body.data.materials.append(skin)
+ body['measurementGuides']=json.dumps(guides)
+ # Opaque three-dimensional mosaic shells. All rotations remain covered.
+ pixel_verts=[];pixel_faces=[];pixel_colors=[]
+ # Voxelize the censored surface rather than wrapping the body in rectangular boxes.
+ # One neighboring voxel layer gives conservative opaque coverage at all angles.
+ step=.058;occupied=set()
+ for face in faces:
+  points=[normalized[i] for i in face];centroid=sum(points,Vector())/len(points)
+  if not censor_region(centroid):continue
+  for point in points+[centroid]:
+   cell=tuple(math.floor(coordinate/step) for coordinate in point)
+   for dx,dy,dz in [(0,0,0),(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]:occupied.add((cell[0]+dx,cell[1]+dy,cell[2]+dz))
+ for ix,iy,iz in sorted(occupied):
+  x,y,z=ix*step,iy*step,iz*step;size=step*1.005;off=len(pixel_verts)
+  pixel_verts.extend((x+dx*size,-(z+dz*size),y+dy*size) for dx,dy,dz in [(0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)])
+  shade=random.uniform(.32,.62);pixel_colors.extend([(shade,shade*.97,shade*.94,1)]*8)
+  pixel_faces.extend(tuple(off+i for i in face) for face in [(0,3,2,1),(4,5,6,7),(0,1,5,4),(3,7,6,2),(0,4,7,3),(1,2,6,5)])
+ pm=bpy.data.meshes.new('Permanent privacy mosaic');pm.from_pydata(pixel_verts,[],pixel_faces);pm.update();pixels=bpy.data.objects.new('PixelPrivacy',pm);bpy.context.collection.objects.link(pixels);pixels['censored']=True
+ attr=pm.color_attributes.new(name='Mosaic',type='FLOAT_COLOR',domain='POINT')
+ for i,color in enumerate(pixel_colors):attr.data[i].color=color
+ mat=bpy.data.materials.new('Opaque privacy pixels');mat.use_nodes=True;n=mat.node_tree.nodes;bsdf=n.get('Principled BSDF');color=n.new('ShaderNodeVertexColor');color.layer_name='Mosaic';mat.node_tree.links.new(color.outputs['Color'],bsdf.inputs['Base Color']);bsdf.inputs['Roughness'].default_value=1;pm.materials.append(mat)
+ bpy.ops.object.select_all(action='DESELECT');body.select_set(True);pixels.select_set(True)
+ dest=root/'public/models'/f'fit-{kind}.glb';bpy.ops.export_scene.gltf(filepath=str(dest),export_format='GLB',use_selection=True,export_apply=True,export_yup=True,export_extras=True)
+ # A censored white-background fallback uses exactly the same meshes.
+ bpy.ops.mesh.primitive_plane_add(size=200,location=(0,0,-.005));floor=bpy.context.object;floor.name='White studio';white=bpy.data.materials.new('White');white.diffuse_color=(1,1,1,1);floor.data.materials.append(white)
+ world=bpy.context.scene.world;world.use_nodes=True;world.node_tree.nodes.get('Background').inputs['Color'].default_value=(1,1,1,1);world.node_tree.nodes.get('Background').inputs['Strength'].default_value=.8
+ for position,power,size in [((3,-4,5),450,5),((-3,-2,3),250,4),((0,3,5),350,4)]:
+  bpy.ops.object.light_add(type='AREA',location=position);light=bpy.context.object;light.data.energy=power;light.data.shape='DISK';light.data.size=size;light.rotation_euler=(Vector((0,0,1.8))-light.location).to_track_quat('-Z','Y').to_euler()
+ bpy.ops.object.camera_add(location=(0,-6.8,1.72));camera=bpy.context.object;camera.rotation_euler=(Vector((0,0,1.72))-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.lens=55
+ scene=bpy.context.scene;scene.camera=camera;scene.render.engine='CYCLES';scene.cycles.samples=32;scene.cycles.use_denoising=False;scene.render.resolution_x=576;scene.render.resolution_y=896;scene.render.resolution_percentage=100;scene.view_settings.view_transform='AgX';scene.render.image_settings.file_format='PNG';scene.render.filepath=str(root/'public/images/atelier'/f'fit-reference-{kind}.png');bpy.ops.render.render(write_still=True)
+ print(kind,'GLB bytes',dest.stat().st_size,'guides',guides)
 for kind in ['male','female']:make(kind)

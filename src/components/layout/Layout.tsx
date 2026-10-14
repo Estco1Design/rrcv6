@@ -42,9 +42,6 @@ function Footer() {
             <p className="text-t-micro text-rrc-off max-w-md">
               {t.footer.digitalFashionHouse}. {t.footer.architecturalSilhouettes}. {t.footer.premiumMaterials}. {t.footer.attentionToDetail}.
             </p>
-            <p className="text-t-micro text-rrc-off mt-2">
-              {t.footer.est}
-            </p>
           </div>
 
           {/* Links - SHOP (единая схема категорий: /shop?category=<slug>) */}

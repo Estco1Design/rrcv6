@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Unbounded, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import {PrivateSessionProvider} from "@/components/private/PrivateSessionProvider";
+import {PageMotion} from "@/components/layout/PageMotion";
 import { LanguageProvider } from "@/i18n";
 import {siteConfig} from "@/config/site";
 import { ViewTransitions } from "next-view-transitions";
@@ -19,8 +21,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: siteConfig.url ? new URL(siteConfig.url) : undefined,
-  title: "RICHRUSSIANCOMMUNITY — RRC | EST. 2026",
-  description: "Digital fashion house. Architectural silhouettes. Premium materials. EST. 2026.",
+  title: "RICHRUSSIANCOMMUNITY — RRC",
+  description: "Digital fashion house. Architectural silhouettes. Premium materials.",
   keywords: ["RRC", "RICHRUSSIANCOMMUNITY", "fashion", "streetwear", "premium", "digital fashion house"],
   authors: [{ name: "RICHRUSSIANCOMMUNITY" }],
   openGraph: {
@@ -47,7 +49,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="ru">
         <body className={`${unbounded.variable} ${ibmPlexMono.variable} antialiased`}>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider><PrivateSessionProvider><PageMotion/>{children}</PrivateSessionProvider></LanguageProvider>
         </body>
       </html>
     </ViewTransitions>

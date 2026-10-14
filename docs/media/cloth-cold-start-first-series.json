@@ -1,0 +1,82 @@
+{
+  "device": "Linux cloud VM, Intel Xeon Platinum 8573C, 5 vCPU",
+  "browser": "Chromium 154, SwiftShader",
+  "physical_phone": false,
+  "recording_enabled": false,
+  "runs": [
+    {
+      "cpu_throttle": 1,
+      "network": "unthrottled localhost",
+      "scene": {
+        "fabricScene": "",
+        "state": "complete",
+        "importMs": "949",
+        "profile": "mobile",
+        "grabbed": "",
+        "cut": "1.0000",
+        "blade": "0.0120",
+        "seconds": "4.500",
+        "tool": "false",
+        "renderCount": "18",
+        "topMotion": "0",
+        "bottomMotion": "0",
+        "cpuRenderMs": "0.4000000059604645",
+        "cpuFrameMs": "0.7999999970197678",
+        "timings": "{\"contextAndSceneInitMs\":165.5,\"colorFetchMs\":26.400000005960464,\"roughnessFetchMs\":26.900000005960464,\"metalNormalFetchMs\":27.900000005960464,\"studioFetchMs\":31.100000008940697,\"normalFetchMs\":32.3999999910593,\"roughnessDecodeMs\":8.700000002980232,\"metalNormalDecodeMs\":9.799999997019768,\"studioDecodeMs\":6.799999997019768,\"normalDecodeMs\":24.600000008940697,\"colorDecodeMs\":46.5,\"modelFetchMs\":96.90000000596046,\"modelParseMs\":15.899999991059303,\"resourcesReadyMs\":280.69999998807907,\"cpuPreparationMs\":178.90000000596046,\"textureUploadSubmitMs\":23.5,\"textureUploadCompleteWallMs\":185,\"shaderCompileMs\":30.799999997019768,\"gpuWarmupMs\":1325.5,\"readyMs\":2018.3999999910593}",
+        "pixelCount": "599114",
+        "clothVertices": "2050",
+        "interactive": "true",
+        "firstShownNavigationMs": "4047.3999999910593",
+        "firstShownMs": "2991.2000000029802",
+        "dragging": ""
+      },
+      "cpu_frame": {
+        "count": 38,
+        "median_ms": 7.899999998509884,
+        "p95_ms": 784.2999999970198
+      },
+      "render_intervals": {
+        "count": 36,
+        "median_ms": 355.30000000447035,
+        "p95_ms": 18576.90000000596
+      }
+    },
+    {
+      "cpu_throttle": 4,
+      "network": "8Mbps/80ms",
+      "scene": {
+        "fabricScene": "",
+        "state": "complete",
+        "importMs": "1885",
+        "profile": "mobile",
+        "grabbed": "",
+        "cut": "1.0000",
+        "blade": "0.0120",
+        "seconds": "4.500",
+        "tool": "false",
+        "renderCount": "25",
+        "topMotion": "0",
+        "bottomMotion": "0",
+        "cpuRenderMs": "1.2000000029802322",
+        "cpuFrameMs": "4",
+        "timings": "{\"contextAndSceneInitMs\":641.4000000059605,\"colorFetchMs\":699.3999999910593,\"roughnessFetchMs\":752.9000000059605,\"studioFetchMs\":727,\"metalNormalFetchMs\":771.0999999940395,\"normalFetchMs\":863.5,\"modelFetchMs\":800,\"modelParseMs\":184.90000000596046,\"colorDecodeMs\":453.8999999910593,\"studioDecodeMs\":341.79999999701977,\"roughnessDecodeMs\":367.79999999701977,\"metalNormalDecodeMs\":328.90000000596046,\"normalDecodeMs\":318.1000000089407,\"resourcesReadyMs\":1883.2000000029802,\"cpuPreparationMs\":618.5,\"textureUploadSubmitMs\":118.5,\"textureUploadCompleteWallMs\":208.29999999701977,\"shaderCompileMs\":179.40000000596046,\"gpuWarmupMs\":931.1000000089407,\"readyMs\":3851.5}",
+        "pixelCount": "599114",
+        "clothVertices": "2050",
+        "interactive": "true",
+        "firstShownNavigationMs": "16407.59999999404",
+        "firstShownMs": "5794.4000000059605",
+        "dragging": ""
+      },
+      "cpu_frame": {
+        "count": 44,
+        "median_ms": 14.449999995529652,
+        "p95_ms": 61
+      },
+      "render_intervals": {
+        "count": 42,
+        "median_ms": 216.54999999701977,
+        "p95_ms": 680.8999999910593
+      }
+    }
+  ]
+}

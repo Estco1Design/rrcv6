@@ -1,0 +1,81 @@
+{
+  "asset": "poly_wool_herringbone",
+  "origin": "https://polyhaven.com/a/poly_wool_herringbone",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "colormass": "Photography",
+    "Rico Cilliers": "Processing"
+  },
+  "source_dimensions": [
+    4096,
+    4181
+  ],
+  "source_physical_mm": [
+    270.0788548673393,
+    275.70000290870667
+  ],
+  "source_maps": [
+    {
+      "map": "color",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/poly_wool_herringbone/poly_wool_herringbone_diff_4k.jpg",
+      "publisher_md5": "341e13e3da4f8fac10d8007d2675f2c8",
+      "sha256": "a72582be1337c11e2e59a03e01ef0270f2c0f455a410c5cc667df9682e2c76ce",
+      "bytes": 13605843
+    },
+    {
+      "map": "normal",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/4k/poly_wool_herringbone/poly_wool_herringbone_nor_gl_4k.exr",
+      "publisher_md5": "af44dd196d025efeaf2967f9ede231a3",
+      "sha256": "c114255a5faf553b859accf87633aa5a828a08211b19ec1abe69f912dd090b3b",
+      "bytes": 29735024
+    },
+    {
+      "map": "roughness",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/4k/poly_wool_herringbone/poly_wool_herringbone_rough_4k.exr",
+      "publisher_md5": "cb9e25e1bfd0ebef440b9b7b61d1ff8e",
+      "sha256": "b9456b1d67b78f75d319af7a6c5262fb2742fde29aaa168a634ca11868da0456",
+      "bytes": 21237605
+    }
+  ],
+  "runtime_maps": [
+    {
+      "file": "wool-scan-color-desktop.webp",
+      "dimensions": [
+        2048,
+        2090
+      ],
+      "bytes": 1684042,
+      "sha256": "2be3b4eb78e29f379d981465b4045697e532e607979cbf1d56705e1ed85e49bc"
+    },
+    {
+      "file": "wool-scan-surface-desktop.webp",
+      "dimensions": [
+        2048,
+        2090
+      ],
+      "bytes": 8607238,
+      "sha256": "dee7185c7f384a8f0c458a146677c33d0d0885b97a215a65ca7b0bad44f40614"
+    },
+    {
+      "file": "wool-scan-color-mobile.webp",
+      "dimensions": [
+        1024,
+        1045
+      ],
+      "bytes": 481886,
+      "sha256": "65ba0458aed2f07e495ac2e46cccb10fe45f266d25af5d50a15e9a203df28f9d"
+    },
+    {
+      "file": "wool-scan-surface-mobile.webp",
+      "dimensions": [
+        1024,
+        1045
+      ],
+      "bytes": 2396150,
+      "sha256": "86c1fa8677d37dc4c01b3eff53d0a993c0b28b321b8ae04b912aefb881f773b6"
+    }
+  ],
+  "encoding": "Color sRGB; surface R/G OpenGL normal XY, B linear roughness; positive normal Z reconstructed.",
+  "black_dye": "Runtime material tint; source color map is unpainted."
+}

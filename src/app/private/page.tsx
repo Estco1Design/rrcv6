@@ -1,2 +1,4 @@
 import {redirect} from 'next/navigation';
-export default function PrivateWelcomePage(){redirect('/private/home')}
+import {hasPrivateAccessSession} from '@/lib/private-access';
+import {PrivateWelcome} from '@/components/private/PrivateWelcome';
+export default async function Page(){if(!await hasPrivateAccessSession())redirect('/');return <PrivateWelcome/>}

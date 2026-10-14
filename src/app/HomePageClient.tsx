@@ -4,7 +4,6 @@ import { useLanguage } from "@/i18n";
 import Layout from "@/components/layout/Layout";
 import Link from "next/link";
 import { HeroSection } from "@/components/home/HeroSection";
-import { ManifestoSection } from "@/components/home/ManifestoSection";
 import { getFeaturedProducts } from "@/lib/products";
 import {SceneReveal} from "@/components/home/SceneReveal";
 import {CampaignSection} from "@/components/home/CampaignSection";
@@ -21,21 +20,17 @@ export default function HomePage() {
       {/* HERO SECTION - Full screen with animations */}
       <HeroSection />
 
-      {/* MANIFESTO SECTION */}
-      <SceneReveal><ManifestoSection /></SceneReveal>
 
       {/* FEATURED PRODUCTS SECTION */}
-      <section id="current-selection" className="scroll-mt-24 py-16 md:py-24 px-4 md:px-8"><SceneReveal>
+      <section id="current-selection" className="scroll-mt-24 py-24 md:py-36 px-4 md:px-8"><SceneReveal>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="flex items-end justify-between mb-12 md:mb-16">
             <div>
-              <h2 className="font-display text-2xl md:text-3xl font-light tracking-wide text-rrc-white uppercase mb-2">
-                {language === 'ru' ? 'НОВЫЕ ОБЪЕКТЫ' : 'NEW OBJECTS'}
+              <h2 className="font-display text-lg md:text-2xl font-light tracking-wide text-rrc-white uppercase mb-2">
+                {language === 'ru' ? 'Коллекция' : 'Collection'}
               </h2>
-              <p className="text-t-micro text-rrc-off tracking-widest uppercase">
-                NEW OBJECTS — RICH RUSSIAN COMMUNITY
-              </p>
+
             </div>
             <Link
               href="/shop?section=current"

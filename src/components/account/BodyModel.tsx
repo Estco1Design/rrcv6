@@ -15,7 +15,7 @@ type Viewer = {
   zoom: (amount: number) => void;
 };
 const control =
-  "min-h-11 min-w-11 px-3 py-2 text-xs text-rrc-silver hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rrc-silver";
+  "min-h-11 min-w-11 px-3 py-2 text-xs text-neutral-700 hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rrc-silver";
 
 /** Original watertight GLB sculpture; reference proportions, never an inferred personal body. */
 export default function BodyModel({
@@ -55,7 +55,7 @@ export default function BodyModel({
     const scene = new THREE.Scene(),
       camera = new THREE.PerspectiveCamera(32, 1, 0.1, 30);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0xffffff, 1);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
@@ -67,23 +67,23 @@ export default function BodyModel({
     scene.environment = environment.texture;
     studio.dispose();
     pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xe1e3ed, 0x191215, 0.6));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xaaaaaa, 1.1));
     const light = new THREE.DirectionalLight(0xe9eef7, 3);
     light.position.set(2, 4, 3);
     scene.add(light);
-    const rim = new THREE.DirectionalLight(0xb65b73, 2.7);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.2);
     rim.position.set(-2, 2, -3);
     scene.add(rim);
     const fill = new THREE.DirectionalLight(0xffffff, 1.5);
     fill.position.set(-3, 2, 1);
     scene.add(fill);
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0x3c3e43,
-      metalness: 0.9,
-      roughness: 0.3,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.2,
-      envMapIntensity: 0.8,
+      color: 0xffffff, vertexColors: true, metalness: 0,
+      roughness: 0.68, envMapIntensity: 0.45,
+    });
+    const privacyMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff, vertexColors: true, transparent: false,
+      opacity: 1, depthWrite: true,
     });
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1.73, 0);
@@ -292,7 +292,25 @@ export default function BodyModel({
               ? object.material
               : [object.material];
             old.forEach((m) => m.dispose());
-            object.material = material;
+            object.material = object.name.includes("PixelPrivacy") || object.userData.censored ? privacyMaterial : material;
+          }
+        });
+        gltf.scene.traverse((object) => {
+          const raw = object.userData.measurementGuides;
+          if (!raw) return;
+          const guides = typeof raw === "string" ? JSON.parse(raw) : raw;
+          for (const key of ["neck", "chest", "waist", "hips"] as MeasurementKey[]) {
+            const guide = guides[key];
+            if (!guide) continue;
+            const group = markings.get(key);
+            if (group) {
+              group.children.forEach((child) => {
+                if (child instanceof THREE.Mesh) {child.geometry.dispose(); child.material.dispose();}
+              });
+              group.clear();
+            }
+            ring(key, 0, guide.y, guide.rx + .018, guide.rz + .018, guide.z);
+            centres.set(key, v(0, guide.y, guide.z));
           }
         });
         scene.add(gltf.scene);
@@ -339,6 +357,7 @@ export default function BodyModel({
         }
       });
       material.dispose();
+      privacyMaterial.dispose();
       environment.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
@@ -349,11 +368,11 @@ export default function BodyModel({
     viewer.current?.select(selected);
   }, [selected]);
   return (
-    <div className="rrc-fit-viewer">
+    <div className="rrc-fit-viewer bg-white text-neutral-900 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <span className="text-[10px] text-rrc-off">RRC / ATELIER FORM</span>
+        <span className="text-[10px] text-neutral-500">RRC / ATELIER FORM</span>
         <div
-          className="flex bg-white/[.04] p-1 rounded-full"
+          className="flex gap-1"
           aria-label={ru ? "Форма манекена" : "Mannequin form"}
         >
           {(["male", "female"] as const).map((f) => (
@@ -362,7 +381,7 @@ export default function BodyModel({
               key={f}
               aria-pressed={form === f}
               onClick={() => setForm(f)}
-              className={`min-h-11 px-4 rounded-full text-xs transition-colors ${form === f ? "bg-rrc-white text-rrc-black" : "text-rrc-off hover:text-white"}`}
+              className={`min-h-11 px-4 border-b text-xs transition-colors ${form === f ? "border-black text-black" : "border-transparent text-neutral-500 hover:text-black"}`}
             >
               {f === "male"
                 ? ru
@@ -375,10 +394,10 @@ export default function BodyModel({
           ))}
         </div>
       </div>
-      <div className="relative overflow-hidden rounded-[2px] bg-[#09090b] border border-white/[.08]">
+      <div className="relative overflow-hidden rounded-[2px] bg-white border border-black/[.06]">
         <div
           aria-hidden="true"
-          className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_35%,#262027_0%,transparent_65%)]"
+          className="absolute inset-0 pointer-events-none bg-white"
         />
         <div
           ref={host}
@@ -395,9 +414,9 @@ export default function BodyModel({
         <div
           ref={label}
           aria-hidden="true"
-          className={`pointer-events-none absolute left-0 top-0 max-w-[145px] border-l border-[#df8198] bg-black/80 px-3 py-2 text-[11px] backdrop-blur-sm ${status === "ready" ? "" : "hidden"}`}
+          className={`pointer-events-none absolute left-0 top-0 max-w-[145px] border-l border-[#df8198] bg-white/90 px-3 py-2 text-[11px] backdrop-blur-sm ${status === "ready" ? "" : "hidden"}`}
         >
-          <span className="block text-rrc-silver">
+          <span className="block text-neutral-800">
             {ru ? measurements[selected].ru : measurements[selected].en}
           </span>
           <span className="block mt-1 tabular-nums text-[#df8198]">
@@ -414,33 +433,33 @@ export default function BodyModel({
         {status === "loading" && (
           <p
             role="status"
-            className="absolute inset-0 flex items-center justify-center text-sm text-rrc-off"
+            className="absolute inset-0 flex items-center justify-center text-sm text-neutral-500"
           >
-            {ru ? "Загружаем скульптуру…" : "Loading sculpture…"}
+            {ru ? "Загружаем модель…" : "Loading model…"}
           </p>
         )}
         {status === "fallback" && (
           <div className="relative p-5">
             <Image
-              src="/images/atelier/fit-concept.png"
+              src={`/images/atelier/fit-reference-${form}.png`}
               alt={
                 ru
                   ? "Концепт мужского и женского манекенов RRC"
                   : "RRC male and female mannequin concept"
               }
-              width={1536}
-              height={1024}
+              width={576}
+              height={896}
               sizes="(max-width: 768px) 100vw, 50vw"
               className="w-full"
             />
-            <p className="mt-4 text-xs leading-relaxed text-rrc-off">
+            <p className="mt-4 text-xs leading-relaxed text-neutral-500">
               {ru
                 ? "3D недоступно на этом устройстве. Инструкции и все поля мерок доступны ниже."
                 : "3D is unavailable on this device. All measurement fields and instructions remain available below."}
             </p>
           </div>
         )}
-        <p className="absolute bottom-4 inset-x-4 text-center text-[10px] text-rrc-off pointer-events-none">
+        <p className="absolute bottom-4 inset-x-4 text-center text-[10px] text-neutral-500 pointer-events-none">
           {status === "ready"
             ? ru
               ? "Один палец — поворот · Два — масштаб"
@@ -449,7 +468,7 @@ export default function BodyModel({
         </p>
       </div>
       <div
-        className="flex items-center justify-between flex-wrap gap-1 mt-3 border-b border-white/10 pb-3"
+        className="flex items-center justify-between flex-wrap gap-1 mt-3 border-b border-black/10 pb-3"
         aria-label={ru ? "Управление моделью" : "Model controls"}
       >
         <button

@@ -1,0 +1,12 @@
+<script type="module">
+import * as T from './three.module.js';
+const renderer=new T.WebGLRenderer();document.body.append(renderer.domElement);
+const c=document.createElement('canvas');c.width=256;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#111111';ctx.fillRect(0,0,256,128);
+const g=ctx.createRadialGradient(186,44,1,186,44,46);g.addColorStop(0,'#c6c3bd');g.addColorStop(.3,'#aaa8a3');g.addColorStop(1,'#111111');ctx.fillStyle=g;ctx.fillRect(0,0,256,128);
+const texture=new T.CanvasTexture(c);texture.colorSpace=T.SRGBColorSpace;texture.mapping=T.EquirectangularReflectionMapping;
+const pmrem=new T.PMREMGenerator(renderer),rt=pmrem.fromEquirectangular(texture);
+const raw=new Uint16Array(rt.width*rt.height*4);renderer.readRenderTargetPixels(rt,0,0,rt.width,rt.height,raw);
+const bytes=new Uint8ClampedArray(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=Math.round(Math.min(1,T.DataUtils.fromHalfFloat(raw[i]))*255);
+const out=document.createElement('canvas');out.width=rt.width;out.height=rt.height;out.getContext('2d').putImageData(new ImageData(bytes,rt.width,rt.height),0,0);
+window.result={png:out.toDataURL('image/png'),width:rt.width,height:rt.height};
+</script>
