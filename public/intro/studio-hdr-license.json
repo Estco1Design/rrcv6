@@ -1,0 +1,17 @@
+{
+  "width": 384,
+  "height": 512,
+  "maximum": 440.5,
+  "format": "RGBA16F little-endian, linear sRGB CubeUV, PMREM cube128",
+  "source": "https://polyhaven.com/a/studio_small_09",
+  "license": "CC0-1.0",
+  "source_sha256": "e7cfda5f4e98e623db12b8bfd0184e048488e4855d9c83e2751fb44a32e80c45",
+  "source_bytes": 1615248,
+  "runtime_bytes": 1572864,
+  "runtime_sha256": "5d5426bb9d523683b5bf03eaeb5a828103f628a1d3e4cff8b2b172a7b870dcff",
+  "hdr_preserved": true,
+  "author": "Sergej Majboroda",
+  "source_url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_09_1k.hdr",
+  "download_gzip_bytes": 683373,
+  "download_gzip_sha256": "2b189040cc7930a65b592f42952dff9d71f42c82b7bdb63de0661a19bdae8f59"
+}

@@ -11,26 +11,24 @@
       "dpr": 1,
       "profile": "desktop",
       "startup": {
-        "contextAndSceneInitMs": 960.2000000029802,
-        "modelFetchMs": 166.29999999701977,
-        "modelParseMs": 12.700000002980232,
-        "metalNormalFetchMs": 179.59999999403954,
-        "studioFetchMs": 189.59999999403954,
-        "colorFetchMs": 194.8999999910593,
-        "studioDecodeMs": 8.600000008940697,
-        "metalNormalDecodeMs": 19.30000001192093,
-        "normalRoughnessFetchMs": 211.79999999701977,
-        "normalRoughnessDecodeMs": 223.20000000298023,
-        "colorDecodeMs": 267.6000000089407,
-        "resourcesReadyMs": 1423.7000000029802,
-        "cpuPreparationMs": 591.5,
-        "textureUploadSubmitMs": 523,
-        "textureUploadCompleteWallMs": 714.9000000059605,
-        "shaderCompileMs": 25.599999994039536,
-        "gpuWarmupMs": 2114.2000000029802,
-        "readyMs": 4909.9000000059605
+        "contextAndSceneInitMs": 555,
+        "studioFetchMs": 82.40000000596046,
+        "colorFetchMs": 101.70000000298023,
+        "studioInflateMs": 75,
+        "modelFetchMs": 213.90000000596046,
+        "modelParseMs": 11.299999997019768,
+        "normalRoughnessFetchMs": 226.79999999701977,
+        "colorDecodeMs": 325.79999999701977,
+        "normalRoughnessDecodeMs": 235.79999999701977,
+        "resourcesReadyMs": 1025.9000000059605,
+        "cpuPreparationMs": 1002.7000000029802,
+        "textureUploadSubmitMs": 485,
+        "textureUploadCompleteWallMs": 858.0999999940395,
+        "shaderCompileMs": 25.5,
+        "gpuWarmupMs": 3414,
+        "readyMs": 6355.20000000298
       },
-      "first_shown_navigation_ms": "5825.70000000298",
+      "first_shown_navigation_ms": "9320.09999999404",
       "pixel_count": "921600",
       "vertices": "12642",
       "checks": [
@@ -49,14 +47,14 @@
         "public entry/unmount"
       ],
       "cpu_frame": {
-        "n": 35,
-        "p50_ms": 9.399999991059303,
-        "p95_ms": 33.099999994039536
+        "n": 36,
+        "p50_ms": 6.700000002980232,
+        "p95_ms": 28
       },
       "observed_render_interval": {
         "n": 31,
-        "p50_ms": 468.70000000298023,
-        "p95_ms": 1027.5
+        "p50_ms": 732.7999999970198,
+        "p95_ms": 2265.5999999940395
       }
     },
     {
@@ -67,26 +65,24 @@
       "dpr": 3,
       "profile": "mobile",
       "startup": {
-        "contextAndSceneInitMs": 877.0999999940395,
-        "colorFetchMs": 88.09999999403954,
-        "modelFetchMs": 87.5,
-        "modelParseMs": 15.600000008940697,
-        "metalNormalFetchMs": 108.3999999910593,
-        "studioFetchMs": 108.30000001192093,
-        "normalRoughnessFetchMs": 111.1000000089407,
-        "metalNormalDecodeMs": 4.799999997019768,
-        "studioDecodeMs": 4.9000000059604645,
-        "normalRoughnessDecodeMs": 53.5,
-        "colorDecodeMs": 97.20000000298023,
-        "resourcesReadyMs": 1062.7000000029802,
-        "cpuPreparationMs": 237.8999999910593,
-        "textureUploadSubmitMs": 28.099999994039536,
-        "textureUploadCompleteWallMs": 128.8999999910593,
-        "shaderCompileMs": 30.900000005960464,
-        "gpuWarmupMs": 923.0999999940395,
-        "readyMs": 2402
+        "contextAndSceneInitMs": 764.7999999970198,
+        "colorFetchMs": 46.70000000298023,
+        "studioFetchMs": 119.5,
+        "colorDecodeMs": 98.8999999910593,
+        "modelFetchMs": 161.09999999403954,
+        "modelParseMs": 14.799999997019768,
+        "normalRoughnessFetchMs": 177.40000000596046,
+        "studioInflateMs": 71.1000000089407,
+        "normalRoughnessDecodeMs": 87.09999999403954,
+        "resourcesReadyMs": 1031.7999999970198,
+        "cpuPreparationMs": 270.70000000298023,
+        "textureUploadSubmitMs": 24.099999994039536,
+        "textureUploadCompleteWallMs": 125.70000000298023,
+        "shaderCompileMs": 42.20000000298023,
+        "gpuWarmupMs": 1546.9000000059605,
+        "readyMs": 3053.0999999940395
       },
-      "first_shown_navigation_ms": "3242.199999988079",
+      "first_shown_navigation_ms": "4179.5999999940395",
       "pixel_count": "599114",
       "vertices": "7954",
       "checks": [
@@ -102,14 +98,14 @@
         "public entry/unmount"
       ],
       "cpu_frame": {
-        "n": 65,
-        "p50_ms": 5.699999988079071,
-        "p95_ms": 21.799999997019768
+        "n": 69,
+        "p50_ms": 5.100000008940697,
+        "p95_ms": 21.599999994039536
       },
       "observed_render_interval": {
-        "n": 61,
-        "p50_ms": 277.30000001192093,
-        "p95_ms": 722.3999999910593
+        "n": 64,
+        "p50_ms": 402.1499999985099,
+        "p95_ms": 1154.5
       }
     }
   ]

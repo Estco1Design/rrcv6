@@ -1,6 +1,6 @@
-"""Retain modest secondary gathers from Microsoft's CC0 Maya cloth simulation.
+"""Retain the broad and secondary drape folds from Microsoft's CC0 Maya cloth simulation.
 The source technical-fabric MATERIAL is not used. Only surface positions/UVs
-are sampled. Main silhouette and large rolled folds remain authored geometry.
+are sampled. Silhouette remains authored; broad folds retain the simulated drape.
 """
 from pathlib import Path
 import json,hashlib,urllib.request
@@ -23,8 +23,8 @@ n=257;y,x=np.mgrid[:n,:n]/(n-1)
 height=LinearNDInterpolator(uv,pos[:,1])(x,y)
 missing=np.isnan(height);height[missing]=NearestNDInterpolator(uv,pos[:,1])(x[missing],y[missing])
 # Decompose global pole/drape height from secondary folds; no random field/noise.
-residual=gaussian_filter(height,1)-gaussian_filter(height,11)
-field=(.065*np.tanh(residual*16/.065)).astype('<f4')
+residual=gaussian_filter(height,1)-gaussian_filter(height,45)
+field=(.19*np.tanh(residual*14/.19)).astype('<f4')
 output=root/'public/intro/cloth-gathers.bin';output.write_bytes(field.tobytes())
-manifest={'source':'https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenCloth','author':'Microsoft','license':'CC0-1.0','source_binary_sha256':hashlib.sha256(binary).hexdigest(),'source_vertices':int(len(pos)),'dimensions':[n,n],'runtime_bytes':output.stat().st_size,'runtime_sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'usage':'Only Maya-simulated shape/UV data; procedural Substance Designer material NOT used. Residual Y gathers resampled in UV space, scaled and bounded to 0.065 scene units.'}
+manifest={'source':'https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenCloth','author':'Microsoft','license':'CC0-1.0','source_binary_sha256':hashlib.sha256(binary).hexdigest(),'source_vertices':int(len(pos)),'dimensions':[n,n],'runtime_bytes':output.stat().st_size,'runtime_sha256':hashlib.sha256(output.read_bytes()).hexdigest(),'usage':'Only Maya-simulated shape/UV data; procedural Substance Designer material NOT used. Residual Y gathers resampled in UV space, scaled and bounded to 0.19 scene units.'}
 (root/'public/intro/cloth-gathers-license.json').write_text(json.dumps(manifest,indent=2)+'\n');print(manifest)

@@ -26,7 +26,7 @@ with sync_playwright() as p:
  assert not errors,errors;context.close()
  # Invalid bytes, rather than just a failed HTTP request, exercise bitmap decoding.
  context=browser.new_context(reduced_motion='no-preference');page=context.new_page()
- page.route('**/intro/wool-scan-surface-*.webp',lambda route:route.fulfill(status=200,content_type='image/png',body=b'invalid image'))
+ page.route('**/intro/suiting-scan-surface-*.webp',lambda route:route.fulfill(status=200,content_type='image/png',body=b'invalid image'))
  page.goto('http://127.0.0.1:3000');expect(page.locator('[data-rrc-boot-intro]')).to_have_attribute('data-intro-fallback','true',timeout=15000)
  expect(page.get_by_role('button',name='ВОЙТИ',exact=True)).to_be_enabled();context.close()
  context=browser.new_context(reduced_motion='no-preference');page=context.new_page();held=[]
@@ -34,5 +34,17 @@ with sync_playwright() as p:
  page.goto('http://127.0.0.1:3000');expect(page.locator('[data-rrc-boot-intro]')).to_have_attribute('data-intro-fallback','true',timeout=17000)
  expect(page.get_by_role('button',name='PRIVATE ACCESS',exact=True)).to_be_enabled()
  for route in held:route.abort()
- context.close();browser.close()
- print('PASS: stable final pose across reload/wake, rapid/clamped grabs on both sheets, complete replay, private input, corrupt bitmap, bounded loading timeout')
+ context.close()
+ # Lossless HDR codec is optional. Unsupported/corrupt gzip uses the raw atlas.
+ for unavailable in [True,False]:
+  context=browser.new_context(viewport={'width':390,'height':844},reduced_motion='no-preference');page=context.new_page();requests=[];page.on('request',lambda r:requests.append(r.url));page.add_init_script("sessionStorage.setItem('rrc_cut_played','true')")
+  if unavailable:page.add_init_script("Object.defineProperty(window,'DecompressionStream',{configurable:true,value:undefined})")
+  else:page.route('**/intro/studio-hdr-cubeuv.bin.gz',lambda route:route.fulfill(status=200,body=b'invalid gzip'))
+  page.goto('http://127.0.0.1:3000');page.wait_for_selector('[data-fabric-scene][data-state="complete"]',timeout=30000)
+  assert any(u.endswith('/studio-hdr-cubeuv.bin') for u in requests)
+  expect(page.get_by_role('button',name='ВОЙТИ',exact=True)).to_be_enabled();context.close()
+ context=browser.new_context(reduced_motion='no-preference');page=context.new_page()
+ page.route('**/intro/studio-hdr-cubeuv.bin*',lambda route:route.fulfill(status=200,body=b'invalid HDR'))
+ page.goto('http://127.0.0.1:3000');expect(page.locator('[data-rrc-boot-intro]')).to_have_attribute('data-intro-fallback','true',timeout=15000)
+ expect(page.get_by_role('button',name='PRIVATE ACCESS',exact=True)).to_be_enabled();context.close();browser.close()
+ print('PASS: stable final pose across reload/wake, rapid/clamped grabs on both sheets, complete replay, private input, corrupt bitmap, bounded loading timeout, unavailable/corrupt HDR codec, corrupt HDR fallback')

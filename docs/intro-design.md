@@ -1,62 +1,75 @@
-# RRC textile revision — 2026-10-14
+# RRC — photographic textile and HDR revision, 2026-10-14
 
-Only the entrance changes. Existing fonts, HTML name, public entry and PRIVATE ACCESS authorization remain. No deployment. frontend-design was not used.
+Only the entrance is changed. Existing fonts, fixed HTML name, both entrances, PRIVATE ACCESS authorization, skip/session/reduced-motion/failure behavior and the rest of the site remain. No deployment or main merge. frontend-design was not used.
 
-## Diagnosis and corrections
+## Concrete defects corrected
 
-Previous yarn was a procedural grid, not scanned wool. Mobile reduced the silhouette mesh too far; contour interpolation flattened tangents at knots. Lighting and sheen washed out black. Tool XYZ scaling was inconsistent, thin overlapping edge/spine meshes produced duplicate reflections, and same-side grip linkage moved incorrectly. Anisotropic metal without reliable tangent frames also produced extreme reflections; it is now disabled rather than disguised with lighting.
+The previous implementation mistakenly defined `USE_NORMALMAP_RG`, which Three 0.186 does not recognize. Packed roughness B was therefore interpreted as normal Z. This was our implementation error, not a missing texture. The production material now uses `USE_PACKED_NORMALMAP`. A real WebGL test imports the actual production material helper, renders normal output at two roughness values and confirms identical normals. The broken interpretation is also rendered as a negative control and gives a large difference. This test checks output pixels, not just a string in the shader.
 
-The final cloth uses scanned color, calibrated OpenGL micro-normal and measured roughness. Intrinsic arc-length UVs preserve physical density across portrait and landscape; raw cut coordinates are a separate attribute, so textile UV changes cannot reveal text ahead of the blade. Cubic contours and denser CPU surfaces remove faceted borders. Nonperiodic broad geometric folds incorporate a separately licensed secondary gather shape. Restrained sheen, black dye and a soft directional studio key replace the earlier gray wash. Real shadow maps replace the fake oval tool shadow.
+The previous synthetic 8-bit environment clamped reflected radiance. A real photographed HDR studio is now prefiltered offline and retained as RGBA16F, including highlights above 1. Cloth now receives physical environment lighting as well as the soft top-left key. No emissive metal or animated glow. The previous procedural titanium-normal map is no longer loaded; clean satin metal uses the geometric normals and physical roughness under real HDR. Checked clean-metal catalog candidates were procedural or rusty/painted, so none was mislabeled as a titanium scan. The black material is calibrated in the color map, rather than a second excessive black tint hiding the weave.
 
-## Provenance and resources
+The old herringbone blend was replaced by a different photographed fine woven scan. UV scale is finer and shared by desktop/portrait, avoiding giant mobile threads. Broad dye pigment was neutralized without generating new weave, random noise or painted fold lighting. Larger irregular shape variations are now retained from the licensed offline cloth drape, reducing the previous uniform rolled bands. Geometry/normals/raycast continue to agree during independent local grabs.
 
-Poly Haven **poly_wool_herringbone**, photographed by colormass, processed by Rico Cilliers. CC0-1.0: https://polyhaven.com/license . Source: https://polyhaven.com/a/poly_wool_herringbone . It is a wool/polyester blend, **not verified pure wool**. Original color/EXR normal/EXR roughness are 4096×4181, physical sample 270.079×275.700 mm. Publisher checksums and source URLs are in `public/intro/wool-scan-manifest.json`; full license note in `WOOL-LICENSE.md`. Sources retained at `/workspace/rrc-material-sources/poly_wool_herringbone`.
+## Search and actual sources
 
-Runtime desktop maps: 2048×2090; mobile: 1024×1045. Color is sRGB, normal/roughness linear. Lossless surface map packs normal XY into RG and roughness into B; positive normal Z is reconstructed. No painted macro light, procedural noise or upscaled source. WebP reduces download bytes, **not GPU texture memory**. Estimated combined RGBA texture+mipmap residency: 45.7 MB desktop, 11.4 MB mobile, excluding other resources.
+Compared genuine ambientCG scans Fabric085, Fabric083 and Fabric079. Fabric085 is wool but too chunky/knitted for the approved suiting reference; Fabric079 is prominently ribbed. Chosen **Fabric083**, ambientCG / Lennart Demes, CC0 1.0 Universal, creation method PBRMultiAngle / height-field photogrammetry.
 
-Secondary gather geometry: Microsoft CC0 SheenCloth, from Khronos glTF-Sample-Assets; only geometry was processed, not its procedural fabric material. Attribution/checksums in `cloth-gathers-license.json`. Scissors are original authored Blender solids, not a purchased hero model. One solid per articulated arm plus one hinge; polished facets are material groups, not overlay meshes. Rounded asymmetric grips, corrected lever linkage, mating blade faces and shared pivot are preserved in mobile LOD. Close-up review exposes remaining limitations rather than claiming cinematic asset quality.
+Origin: https://ambientcg.com/view?id=Fabric083
+License: https://docs.ambientcg.com/license/
+Native archive: https://ambientcg.com/get?file=Fabric083_4K-PNG.zip
+Sources retained outside repository at `/workspace/rrc-realism-sources/Fabric083-4K`. Native maps: 4096² PNG, **normal and displacement genuinely 16-bit**. These are not upscaled smaller images. PyPNG reads the original 16-bit normals before filtering and renormalization. Roughness is the map supplied with the original photographed PBR set; no independent physical measurement is claimed. The provider does not specify fiber composition or physical dimensions: do not label this certified pure wool. Artistic tile calibration is 0.12 m, not a measured swatch dimension.
 
-| Runtime resource | Bytes |
+Source pigment is gray/white check. Uniform black dye replaces its broad pigment differences while preserving photographed fine luminance variations and original normal/roughness. The processing is documented in `prepare-suiting-scan.py` and `suiting-scan-manifest.json`. Runtime sizes: desktop 2048², mobile 1024². Color is sRGB; surface stores OpenGL normal XY in RG and linear roughness B. Positive normal Z is reconstructed correctly. Mipmaps and anisotropic texture filtering remain; no moving high-frequency noise.
+
+Studio: **Poly Haven Studio Small 09**, Sergej Majboroda, CC0.
+https://polyhaven.com/a/studio_small_09 · https://polyhaven.com/license
+Native 1K Radiance HDR, 1,615,248 bytes. Offline linear downsampling and PMREM cube128 retain maximum radiance **440.5**. Runtime 384×512 RGBA16F CubeUV atlas. Lossless gzip reduces download from 1,572,864 to 683,373 bytes; raw atlas remains a compatibility fallback. Browser decompression is measured separately from fetch and all radiance bits are preserved. No runtime PMREM compilation/prefilter pass. Checksums and provenance in `studio-hdr-license.json`.
+
+Macro shape: Microsoft CC0 Maya-simulated SheenCloth geometry, not its procedural textile material. The broad and smaller drape components are sampled into a bounded field; geometry, not the color map, creates fold light/shadow. Shape provenance in `cloth-gathers-license.json`.
+
+A candidate scissors repository had **no license**, so its model was not reused. Poly Haven's model catalog offered bolt cutters, not appropriate tailor's shears. The original articulated solid model remains; the genuine HDR materially improves reflections, but its small CAD facets remain a quality limit.
+
+## Runtime resource sizes
+
+| Resource | Bytes |
 | --- | ---: |
-| wool-scan-color-desktop.webp | 1684042 |
-| wool-scan-surface-desktop.webp | 8607238 |
-| wool-scan-color-mobile.webp | 481886 |
-| wool-scan-surface-mobile.webp | 2396150 |
+| suiting-scan-color-desktop.webp | 713076 |
+| suiting-scan-surface-desktop.webp | 5910860 |
+| suiting-scan-color-mobile.webp | 283834 |
+| suiting-scan-surface-mobile.webp | 1846654 |
+| studio-hdr-cubeuv.bin | 1572864 |
+| studio-hdr-cubeuv.bin.gz | 683373 |
 | cloth-gathers.bin | 264196 |
 | titanium-shears.glb | 801324 |
 | titanium-shears-mobile.glb | 534328 |
 
-Preparation: `scripts/intro/prepare-scanned-wool.py`, `prepare-cloth-gathers.py`, `generate-shears.py`. The previous procedural wool assets remain as provenance but are no longer requested.
+WebP reduces download size, **not GPU memory**. Color plus packed surface RGBA+mips occupy approximately 44.7 MB desktop / 11.2 MB mobile; HDR adds 1.57 MB, excluding other assets/shadows. Original source PNG/archive files are not shipped to browsers. Previous material/environment files are retained for provenance but no longer requested.
 
-## Interaction and rendering
+## Interaction and film
 
-Each sheet owns an independent 525-vertex bounded spring lattice. Bicubic interpolation drives its actual CPU-rendered surface (desktop 12,642 total vertices, mobile 7,954). Normals and bounds follow deformation; raycast uses this same surface. Exterior pins, stretch projections, bending resistance, capped timestep and 4%-short-side displacement bound prevent spikes and menu intrusion. Local hover and captured pointer drag affect neighboring folds, not the whole sheet. Release, cancellation, capture loss, blur/hidden, resize and unmount settle/release correctly. One touch owns capture. HTML controls remain separate. Rendering stops at rest and resumes on input; the film hands off to the final rest shape.
+Both sheets own independent bounded spring state (1,050 total physics vertices); bicubic offsets drive real CPU geometry (12,642 desktop / 7,954 mobile surface vertices). Exterior pins, stretch limits, bending resistance and short damping keep local pulls heavy and bounded. Both visible meshes receive raycast; normal/bounds and projected hit paths follow deformation. Pointer capture, release outside, cancel/lost capture, resize/hidden/blur/unmount and extra-touch handling remain. HTML text/buttons are stable and never captured. Rendering stops at rest and in hidden tabs.
 
-The finite film remains intact-cloth → tool → left-to-right cut → HTML reveal behind the cutting point → exit → menu. Load/decode/upload/compile/warm-up complete before the clock starts; bounded timeout, skip, reduced motion and resource/WebGL failure preserve the working HTML menu. Existing sound switch remains; no new audio assets or effects were added.
+The resource-ready finite film remains cloth → shears → left-to-right cut → fixed HTML reveal only behind the contact → shears exit → menu. New UV density does not affect the independent raw cut coordinate. No decorative effects were added. Existing sound behavior is retained; no new audio assets.
 
-## Verification and limits
+## Validation and limits
 
-See `media/cloth-grab-results.json`, `media/cloth-cold-start.json` and the review page for actual acceptance evidence. Measurements are Chromium 154 on a Linux cloud Xeon VM using ANGLE/SwiftShader. Mobile means 390×844, emulated DPR3 and touch, **not a real phone**. Cold runs use fresh browser processes with disabled cache; one unthrottled localhost run and one CPU×4 / 8 Mbps / 80 ms run. CPU frame values measure update/submission, render intervals include software driver scheduling, fences measure completion wall time, not hardware GPU time. These are not mobile FPS claims.
+See `media/cloth-grab-results.json`, `media/cloth-cold-start.json`, browser screenshots and native recordings in `intro-review.html` for final evidence. The real GPU normal test is `tests/packed-cloth-gpu.py`; it imports the production helper and checks pixels. The project check includes lint, typecheck, unit tests and production build.
 
-The user's original Next.js “1 Issue” was not reproduced: opened dev panel reported Issues=0. Catalog image-quality warnings and unsupported parallel shader extension are separate warnings. The indicator was not hidden; the user's exact message is still needed to diagnose their issue.
+Measurements use Chromium 154, Linux cloud Xeon VM, ANGLE/SwiftShader. Mobile means 390×844 with emulated DPR3/touch and capped 599,114-pixel canvas, **not a real phone**. Cold runs use fresh browsers, cleared/disabled cache, without recording; localhost and CPU×4 / 8Mbps / 80ms conditions. CPU timings measure update/submission; frame intervals include software driver scheduling; fences measure completion wall time, not hardware execution. This does not establish mobile hardware FPS.
 
-Limitations: no real iPhone/Android/Safari validation; controlled folds are not identical to the approved photographed arrangement; original CAD shears still lack a premium scanned/artist-authored production model and measured HDR studio reflections. Genuine blend scan is a valid licensed textile resource but not a certified pure black suiting-wool scan. Missing production assets: an artist-authored/scanned tailor-shear model with clean manifold blade bevels and separate common-pivot arms; a closer pure black suiting-wool scan; a calibrated softbox HDR environment. The current authored shear still has imperfect small blade facets in close-up. These resources are needed to claim the approved photographic quality, which this revision does not yet achieve. No claim of hyperrealism.
-
-## Final measurements
-
-| Cold condition | Scene ready ms | First callback from navigation ms | CPU frame median / p95 ms | Render interval median / p95 ms |
-| --- | ---: | ---: | --- | --- |
-| CPU ×1; unthrottled localhost | 2905.2 | 3777.5 | 4.8 / 15.7 | 246.3 / 543.4 |
-| CPU ×4; 8Mbps/80ms | 5800.3 | 9442.2 | 24.0 / 64.3 | 232.9 / 304.2 |
-
-Mobile render: 599,114 pixels, 7,954 surface vertices, 1,050 physics vertices. Software GPU intervals above are slow and do not establish smooth real-phone performance. No recording or concurrent browser/build test ran during these final cold measurements.
-
-Validation: npm run check passed lint, typecheck, 26 unit tests and production build. Final model rechecked with 26 tests after its forged-face triangulation and outward-winding fixes. Browser acceptance passed desktop/mobile film, masking, render stop/caps, public/private entries, keyboard focus, skip/session/reduced/WebGL failure; both hover/mouse captures, both touch captures, release outside, cancellation/lost capture/resize/hidden, extra finger, repeat, corrupted bitmap and timeout. ESTCO server session, welcome, private home and revocation/logout also passed against isolated temporary databases.
+Remaining quality limits: the controlled fold layout is not the photographed reference's exact drape; Fabric083's composition/physical swatch size are unspecified; scissors are authored CAD geometry rather than a premium scanned/artist-prepared hero model; no real phone/Safari/hardware GPU validation. No claim of hyperrealism. The user's original Next “1 Issue” was not reproduced; the opened panel had 0 and the indicator was not hidden.
 
 ## Changed files
 
-- `src/components/intro/create-cut-scene.ts`, new `cloth-surface.ts`: materials, light/shadows, fine CPU geometry, UVs, tool scaling/contact and sampling.
-- `scripts/intro/generate-shears.py`, new `prepare-scanned-wool.py`, `prepare-cloth-gathers.py`: reproducible preparation.
-- `public/intro/titanium-shears*.glb`, `wool-scan-*.webp`, manifest/license notes, `cloth-gathers.bin` and provenance JSON.
-- `tests/intro.test.ts`, new `cloth-surface.test.ts`, `cloth-lifecycle-smoke.py`: geometry/material failure coverage.
-- `docs/intro-design.md`, `intro-review.html`, `docs/media/*`, `public/intro/README.md`: actual browser evidence and resource provenance.
+`create-cut-scene.ts`, new `packed-cloth-material.ts`; `prepare-cloth-gathers.py`, new `prepare-suiting-scan.py` and `bake-hdr-studio.py`; new `suiting-scan-*` and `studio-hdr-*` assets/license notes in `public/intro`; real GPU regression test and updated resource-failure scripts; review/report/native media. Authentication and catalog files are unchanged.
+
+## Final measurements and results
+
+| Condition | Ready ms | First callback from navigation ms | CPU frame median / p95 ms | Render intervals median / p95 ms |
+| --- | ---: | ---: | --- | --- |
+| CPU ×1; unthrottled localhost | 3737.6 | 4701.9 | 4.8 / 21.1 | 380.2 / 813.5 |
+| CPU ×4; 8Mbps/80ms | 6363.5 | 9068.8 | 41.7 / 182.6 | 419.6 / 1266.3 |
+
+Software GPU intervals are slow: this is not a smooth-phone FPS result. No recording, other browser or build ran during the final cold measurements. The HDR fetch and inflate timings are separate in the raw JSON.
+
+`npm run check` passed lint, typecheck, 26 unit tests and production build. Production browser checks passed the full desktop/mobile film, raw left-to-right mask, shared hinge, final render stop, pixel cap, HTML entries/focus, skip, once/session, reduced motion, resource failure, hidden pause and no-WebGL. Native mouse/touch checks passed both captures, both hovers, release outside, cancel/lost capture, resize/hidden, extra finger, replay/skip and both entries after interaction. Rapid/clamped input, complete replay, corrupted bitmap, loading timeout, unavailable/corrupt gzip codec recovery and corrupt HDR fallback all passed. The production-helper WebGL regression also passed; see `media/packed-normal-gpu.json`.

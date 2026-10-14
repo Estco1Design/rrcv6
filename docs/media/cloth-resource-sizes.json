@@ -1,26 +1,35 @@
 {
   "bytes": {
+    "suiting-scan-color-mobile.webp": 283834,
     "titanium-shears-mobile.glb": 534328,
     "twill-normal.png": 92099,
     "wool-albedo.webp": 465112,
+    "suiting-scan-color-desktop.webp": 713076,
     "wool-normal-desktop.png": 388861,
     "wool-albedo-mobile.webp": 165406,
     "studio-cubeuv.png": 24826,
     "WOOL-LICENSE.md": 1452,
-    "README.md": 685,
+    "README.md": 827,
     "wool-scan-color-desktop.webp": 1684042,
     "cloth-intact.webp": 197392,
+    "studio-hdr-cubeuv.bin": 1572864,
     "wool-color-mobile.webp": 57068,
     "wool-normal-source.png": 2106484,
     "wool-scan-surface-desktop.webp": 8607238,
     "titanium-shears.glb": 801324,
+    "suiting-scan-surface-desktop.webp": 5910860,
     "wool-color-desktop.webp": 55222,
     "wool-rough-mobile.png": 54974,
     "wool-rough-source.png": 685816,
     "cloth-gathers.bin": 264196,
+    "studio-hdr-cubeuv.bin.gz": 683373,
     "wool-color-source.png": 2080332,
-    "cloth-gathers-license.json": 604,
+    "suiting-scan-surface-mobile.webp": 1846654,
+    "cloth-gathers-license.json": 603,
     "wool-normal-mobile.png": 172300,
+    "studio-hdr-license.json": 716,
+    "suiting-scan-manifest.json": 2607,
+    "SUITING-LICENSE.md": 1505,
     "wool-scan-manifest.json": 2512,
     "cloth-plate.webp": 131688,
     "wool-rough-desktop.png": 117114,
@@ -32,15 +41,17 @@
   "runtime_texture_dimensions": {
     "desktop": [
       2048,
-      2090
+      2048
     ],
     "mobile": [
       1024,
-      1045
+      1024
     ]
   },
   "original_scan_dimensions": [
     4096,
-    4181
-  ]
+    4096
+  ],
+  "source_normal_bits": 16,
+  "hdr_lossless_gzip_bytes": 683373
 }

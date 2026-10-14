@@ -1,3 +1,7 @@
+import {
+  packedClothDefines,
+  patchPackedClothShader,
+} from "./packed-cloth-material";
 import * as THREE from "three";
 import { ClothDynamics } from "./cloth-dynamics";
 import { clothContour, ClothSurfaceSampling } from "./cloth-surface";
@@ -117,6 +121,56 @@ export async function createCutScene(
       texture.needsUpdate = true;
       return texture;
     };
+    const loadStudio = async () => {
+      const before = performance.now();
+      let data: ArrayBuffer | undefined;
+      if (typeof DecompressionStream !== "undefined") {
+        try {
+          const response = await fetch("/intro/studio-hdr-cubeuv.bin.gz", {
+            signal,
+          });
+          if (response.ok) {
+            const encoded = await response.arrayBuffer();
+            timings.studioFetchMs = performance.now() - before;
+            const decodeStart = performance.now();
+            data = await new Response(
+              new Blob([encoded])
+                .stream()
+                .pipeThrough(new DecompressionStream("gzip")),
+            ).arrayBuffer();
+            timings.studioInflateMs = performance.now() - decodeStart;
+          }
+        } catch (error) {
+          if (signal.aborted) throw error;
+          // Older HTTP stacks/codecs can use the same lossless raw atlas.
+        }
+      }
+      if (!data) {
+        const response = await fetch("/intro/studio-hdr-cubeuv.bin", {
+          signal,
+        });
+        if (!response.ok) throw new Error("Missing HDR studio");
+        data = await response.arrayBuffer();
+      }
+      timings.studioFetchMs ??= performance.now() - before;
+      if (data.byteLength !== 384 * 512 * 4 * 2)
+        throw new Error("Invalid HDR studio");
+      const texture = retainTexture(
+        new THREE.DataTexture(
+          new Uint16Array(data),
+          384,
+          512,
+          THREE.RGBAFormat,
+          THREE.HalfFloatType,
+        ),
+      );
+      texture.colorSpace = THREE.LinearSRGBColorSpace;
+      texture.mapping = THREE.CubeUVReflectionMapping;
+      texture.generateMipmaps = false;
+      texture.minFilter = texture.magFilter = THREE.LinearFilter;
+      texture.needsUpdate = true;
+      return texture;
+    };
     const loadModel = async () => {
       const before = performance.now();
       const response = await fetch(
@@ -146,21 +200,19 @@ export async function createCutScene(
       return value;
     };
     const suffix = mobile ? "mobile" : "desktop";
-    const [intact, surface, brush, studio, gltf, gathersBuffer] =
-      await Promise.all([
-        loadTexture(`/intro/wool-scan-color-${suffix}.webp`, "color"),
-        loadTexture(
-          `/intro/wool-scan-surface-${suffix}.webp`,
-          "normalRoughness",
-        ),
-        loadTexture("/intro/titanium-normal.png", "metalNormal"),
-        loadTexture("/intro/studio-cubeuv.png", "studio", false),
-        loadModel(),
-        fetch("/intro/cloth-gathers.bin", { signal }).then((r) => {
-          if (!r.ok) throw new Error("Missing cloth shape");
-          return r.arrayBuffer();
-        }),
-      ]);
+    const [intact, surface, studio, gltf, gathersBuffer] = await Promise.all([
+      loadTexture(`/intro/suiting-scan-color-${suffix}.webp`, "color"),
+      loadTexture(
+        `/intro/suiting-scan-surface-${suffix}.webp`,
+        "normalRoughness",
+      ),
+      loadStudio(),
+      loadModel(),
+      fetch("/intro/cloth-gathers.bin", { signal }).then((r) => {
+        if (!r.ok) throw new Error("Missing cloth shape");
+        return r.arrayBuffer();
+      }),
+    ]);
     const gathers = new Float32Array(gathersBuffer);
     if (gathers.length !== 257 * 257) throw new Error("Invalid cloth shape");
     timings.resourcesReadyMs = performance.now() - started;
@@ -183,8 +235,6 @@ export async function createCutScene(
     intact.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
     surface.wrapS = surface.wrapT = THREE.RepeatWrapping;
     surface.anisotropy = intact.anisotropy;
-    brush.wrapS = brush.wrapT = THREE.RepeatWrapping;
-    brush.repeat.set(3, 4);
     // Original studio lighting prefiltered offline: no PMREM passes at startup.
     studio.mapping = THREE.CubeUVReflectionMapping;
     studio.generateMipmaps = false;
@@ -205,33 +255,26 @@ export async function createCutScene(
       map: intact,
       normalMap: surface,
       normalScale: new THREE.Vector2(1, 1),
-      color: new THREE.Color(0.16, 0.165, 0.2),
+      color: new THREE.Color(0.98, 0.98, 1),
       roughness: 1,
       roughnessMap: surface,
       metalness: 0,
       ior: 1.45,
       specularIntensity: 0.25,
-      sheen: 0.18,
-      sheenColor: new THREE.Color(0.025, 0.025, 0.025),
+      sheen: 0.5,
+      sheenColor: new THREE.Color(0.07, 0.07, 0.075),
       sheenRoughness: 1,
-      envMapIntensity: 0.04,
+      envMap: studio,
+      envMapIntensity: 0.4,
       side: THREE.DoubleSide,
     });
     // R/G contain photographed normal XY; B contains measured roughness.
     // Native Three.js reconstructs normal Z for RG maps. The same sampler/UV
     // serves both fields, preventing mismatched density and a third GPU texture.
-    cloth.defines = { ...cloth.defines, USE_NORMALMAP_RG: "" };
-    const packedWool = (shader: THREE.WebGLProgramParametersWithUniforms) => {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <roughnessmap_fragment>",
-        THREE.ShaderChunk.roughnessmap_fragment.replace(
-          "texelRoughness.g",
-          "texelRoughness.b",
-        ),
-      );
-    };
+    cloth.defines = { ...cloth.defines, ...packedClothDefines };
+    const packedWool = patchPackedClothShader;
     cloth.onBeforeCompile = packedWool;
-    cloth.customProgramCacheKey = () => "rrc-scanned-wool-rg-b-v1";
+    cloth.customProgramCacheKey = () => "rrc-scanned-wool-rg-b-hdr-v2";
     const panels = [1, -1].map((sign) => {
       const geometry = new THREE.PlaneGeometry(
           2,
@@ -285,7 +328,10 @@ export async function createCutScene(
     // A separate raw UV varying keeps contact masking independent of texture tiling.
     uncutMaterial.map = intact;
 
-    uncutMaterial.defines = { ...uncutMaterial.defines, USE_NORMALMAP_RG: "" };
+    uncutMaterial.defines = {
+      ...uncutMaterial.defines,
+      USE_PACKED_NORMALMAP: "",
+    };
     uncutMaterial.onBeforeCompile = (shader) => {
       packedWool(shader);
       shader.uniforms.uCut = uncutUniform;
@@ -303,7 +349,7 @@ export async function createCutScene(
         );
     };
     uncutMaterial.customProgramCacheKey = () =>
-      "rrc-intact-cut-scanned-rg-b-v2";
+      "rrc-intact-cut-scanned-rg-b-hdr-v3";
     const uncutGeometry = new THREE.PlaneGeometry(
         2,
         2,
@@ -351,8 +397,6 @@ export async function createCutScene(
             color: original.color,
             metalness: 1,
             roughness: original.roughness,
-            normalMap: brush,
-            normalScale: new THREE.Vector2(0.06, 0.06),
             envMap: studio,
             envMapIntensity: 0.9,
             anisotropy: 0,
@@ -376,10 +420,7 @@ export async function createCutScene(
       heightPixels = height;
       aspect = width / height;
       for (const texture of [intact, surface])
-        texture.repeat.set(
-          0.25 / 0.2700788548673393,
-          0.25 / 0.27570000290870667,
-        );
+        texture.repeat.set(0.25 / 0.12, 0.25 / 0.12);
       camera.left = -aspect;
       camera.right = aspect;
       camera.updateProjectionMatrix();
@@ -401,11 +442,11 @@ export async function createCutScene(
     function foldsAt(u: number, v: number) {
       // Nonperiodic, broad gathered ridges. The two sides have different fold
       // trajectories; there is no regular sinusoidal sheet or material noise.
-      const q = 0.5 + (u - 0.5) * Math.min(1, Math.max(0.5, aspect / 1.5));
+      const q = u;
       const gaussian = (x: number, center: number, radius: number) =>
         Math.exp(-(((x - center) / radius) ** 2));
-      const upper = 0.18 * gaussian(v, 0.8 - 0.13 * q + 0.055 * q * q, 0.1);
-      const lower = 0.19 * gaussian(v, 0.17 + 0.16 * q - 0.06 * q * q, 0.09);
+      const upper = 0.095 * gaussian(v, 0.8 - 0.13 * q + 0.055 * q * q, 0.1);
+      const lower = 0.11 * gaussian(v, 0.17 + 0.16 * q - 0.06 * q * q, 0.09);
       const gatherLeft =
         0.11 * gaussian(q, 0.1 + 0.28 * v, 0.075) * gaussian(v, 0.76, 0.36);
       const gatherRight =
@@ -421,7 +462,9 @@ export async function createCutScene(
       const secondary =
         (at(0, 0) * (1 - tx) + at(1, 0) * tx) * (1 - ty) +
         (at(0, 1) * (1 - tx) + at(1, 1) * tx) * ty;
-      return upper + lower + gatherLeft + gatherRight - valley + secondary;
+      return (
+        upper + lower + 0.4 * (gatherLeft + gatherRight) - valley + secondary
+      );
     }
     function render(
       seconds: number,
@@ -439,11 +482,11 @@ export async function createCutScene(
       host.dataset.renderCount = String(
         Number(host.dataset.renderCount || 0) + 1,
       );
-      ambient.intensity = 0.12 * shot.light;
-      key.intensity = 4.5 * shot.light;
+      ambient.intensity = 0.06 * shot.light;
+      key.intensity = 4 * shot.light;
 
-      cloth.envMapIntensity = 0.04 * shot.light;
-      uncutMaterial.envMapIntensity = 0.04 * shot.light;
+      cloth.envMapIntensity = 0.4 * shot.light;
+      uncutMaterial.envMapIntensity = 0.4 * shot.light;
       const scale = aspect * SHEAR_WIDTH_RATIO;
       const initialRoot = 0.04 - (bladeContactOpen() * SHEAR_WIDTH_RATIO) / 2;
       const exit = smooth((seconds - 3) / 0.7);
@@ -742,7 +785,7 @@ export async function createCutScene(
       }
     };
     const uploadStart = performance.now();
-    for (const texture of [intact, surface, brush, studio])
+    for (const texture of [intact, surface, studio])
       renderer.initTexture(texture);
     timings.textureUploadSubmitMs = performance.now() - uploadStart;
     await waitGpu();

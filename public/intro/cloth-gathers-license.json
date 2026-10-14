@@ -9,6 +9,6 @@
     257
   ],
   "runtime_bytes": 264196,
-  "runtime_sha256": "055b0570fb8924d67ff1c0d23995cc72a7fc214018fcab97cbd07d3c5f0adabb",
-  "usage": "Only Maya-simulated shape/UV data; procedural Substance Designer material NOT used. Residual Y gathers resampled in UV space, scaled and bounded to 0.065 scene units."
+  "runtime_sha256": "4350fe8850bee233bc787c4a0985467ad347ff9ad7fc068f23535a737e2bc65d",
+  "usage": "Only Maya-simulated shape/UV data; procedural Substance Designer material NOT used. Residual Y gathers resampled in UV space, scaled and bounded to 0.19 scene units."
 }
