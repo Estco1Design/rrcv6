@@ -22,3 +22,6 @@ qa/
 
 var/
 *.sqlite*
+
+# Offline cloth preparation caches
+__pycache__/

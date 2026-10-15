@@ -1,0 +1,37 @@
+[
+  {
+    "file": "public/intro/suiting-scan-color-desktop.webp",
+    "bytes": 486774,
+    "sha256": "6c0e736ba002abe5a6a60ef730c23cfbcd2e3fc128450225758d5060f6b01fa7"
+  },
+  {
+    "file": "public/intro/suiting-scan-color-mobile.webp",
+    "bytes": 140670,
+    "sha256": "cfb1599ebefc21f465d2d568781fadd9aa503e55440c5ec013bdd328479bf47c"
+  },
+  {
+    "file": "public/intro/suiting-scan-surface-desktop.webp",
+    "bytes": 8606482,
+    "sha256": "86984cb5c29a6b2e5e746f44b0a27aea82aee270198acd4e8befed9b877f8443"
+  },
+  {
+    "file": "public/intro/suiting-scan-surface-mobile.webp",
+    "bytes": 2396142,
+    "sha256": "3897603988d5ed604e7b219e2a33cb4976b6f14a286f90e8c816f9d135c84f1c"
+  },
+  {
+    "file": "public/intro/titanium-shears-mobile.glb",
+    "bytes": 550620,
+    "sha256": "19fdf5756ceb964470c5e8a3c5338b1be505d093c21177aa7da17c12f661c3b0"
+  },
+  {
+    "file": "public/intro/titanium-shears.glb",
+    "bytes": 840976,
+    "sha256": "7328a7c2a7bf6b7e92b091731b62453788c5465e31f1c009d6a83733de3a30cb"
+  },
+  {
+    "file": "public/intro/cloth-rest.bin",
+    "bytes": 228160,
+    "sha256": "12ab09ae1df1b8cf2a4de9d717db25caed794dff81a62e0c2e788300f993d499"
+  }
+]

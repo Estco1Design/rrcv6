@@ -1,0 +1,160 @@
+{
+  "browser": "Chromium 154, Linux Xeon 8573C, SwiftShader, cgroup 4 CPU",
+  "real_phone": false,
+  "recording": false,
+  "cache": "fresh browser, HTTP cache disabled, warm production server",
+  "runs": [
+    {
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "profile": "desktop",
+      "pixels": 921600,
+      "preparation": {
+        "colorFetchMs": 178.30000001192093,
+        "studioFetchMs": 230.40000000596046,
+        "modelFetchMs": 236.09999999403954,
+        "colorDecodeMs": 90.90000000596046,
+        "modelParseMs": 68,
+        "resourcesReadyMs": 849.6999999880791,
+        "textureUploadSubmitMs": 1.300000011920929,
+        "textureUploadCompleteWallMs": 294.59999999403954,
+        "shaderCompileMs": 20.5,
+        "gpuWarmupMs": 570.4000000059605,
+        "readyMs": 1955.699999988079
+      },
+      "first_shown_navigation_ms": 2819.300000011921,
+      "cpu_render": {
+        "n": 12,
+        "p50_ms": 3.949999988079071,
+        "p95_ms": 11.800000011920929
+      },
+      "submit_interval": {
+        "n": 11,
+        "p50_ms": 200.2000000178814,
+        "p95_ms": 425.19999998807907
+      },
+      "samples": [
+        {
+          "submitInterval": 0,
+          "cpuRender": 2.5
+        },
+        {
+          "submitInterval": 186.40000000596046,
+          "cpuRender": 11.800000011920929
+        },
+        {
+          "submitInterval": 13.099999994039536,
+          "cpuRender": 11
+        },
+        {
+          "submitInterval": 177.09999999403954,
+          "cpuRender": 4.299999982118607
+        },
+        {
+          "submitInterval": 196,
+          "cpuRender": 6.5999999940395355
+        },
+        {
+          "submitInterval": 200.2000000178814,
+          "cpuRender": 3.5999999940395355
+        },
+        {
+          "submitInterval": 425.19999998807907,
+          "cpuRender": 5.100000023841858
+        },
+        {
+          "submitInterval": 216,
+          "cpuRender": 2.100000023841858
+        },
+        {
+          "submitInterval": 347.2000000178814,
+          "cpuRender": 1.800000011920929
+        },
+        {
+          "submitInterval": 379.39999997615814,
+          "cpuRender": 2.9000000059604645
+        },
+        {
+          "submitInterval": 7.5,
+          "cpuRender": 3
+        },
+        {
+          "submitInterval": 311.30000001192093,
+          "cpuRender": 7.800000011920929
+        }
+      ],
+      "errors": []
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 3,
+      "profile": "mobile",
+      "pixels": 718848,
+      "preparation": {
+        "colorFetchMs": 51.19999998807907,
+        "studioFetchMs": 87.40000000596046,
+        "modelFetchMs": 89.7999999821186,
+        "colorDecodeMs": 60.099999994039536,
+        "modelParseMs": 127.30000001192093,
+        "resourcesReadyMs": 992.6999999880791,
+        "textureUploadSubmitMs": 2.7999999821186066,
+        "textureUploadCompleteWallMs": 355.5,
+        "shaderCompileMs": 18.5,
+        "gpuWarmupMs": 1018.4000000059605,
+        "readyMs": 2809.699999988079
+      },
+      "first_shown_navigation_ms": 3798.9000000059605,
+      "cpu_render": {
+        "n": 8,
+        "p50_ms": 5.4000000059604645,
+        "p95_ms": 24
+      },
+      "submit_interval": {
+        "n": 7,
+        "p50_ms": 310.09999999403954,
+        "p95_ms": 927.9000000059605
+      },
+      "samples": [
+        {
+          "submitInterval": 0,
+          "cpuRender": 7.9000000059604645
+        },
+        {
+          "submitInterval": 310.09999999403954,
+          "cpuRender": 13.400000005960464
+        },
+        {
+          "submitInterval": 927.9000000059605,
+          "cpuRender": 2.9000000059604645
+        },
+        {
+          "submitInterval": 348.5,
+          "cpuRender": 2.2000000178813934
+        },
+        {
+          "submitInterval": 9.799999982118607,
+          "cpuRender": 2.300000011920929
+        },
+        {
+          "submitInterval": 476.2000000178814,
+          "cpuRender": 15.100000023841858
+        },
+        {
+          "submitInterval": 172.39999997615814,
+          "cpuRender": 1.9000000059604645
+        },
+        {
+          "submitInterval": 177.60000002384186,
+          "cpuRender": 24
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

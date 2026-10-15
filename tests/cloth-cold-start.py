@@ -11,7 +11,7 @@ with sync_playwright() as p:
   cdp.send('Network.enable');cdp.send('Network.setCacheDisabled',{'cacheDisabled':True});cdp.send('Network.clearBrowserCache');cdp.send('Emulation.setCPUThrottlingRate',{'rate':rate})
   if mbps:cdp.send('Network.emulateNetworkConditions',{'offline':False,'latency':80,'downloadThroughput':mbps*1024*1024/8,'uploadThroughput':1024*1024/8})
   page.goto('http://127.0.0.1:3000');page.wait_for_selector('[data-fabric-scene][data-state="complete"]',timeout=45000);host=page.locator('[data-fabric-scene]')
-  data=host.evaluate('(e)=>({...e.dataset})');run={'cpu_throttle':rate,'network':f'{mbps}Mbps/80ms' if mbps else 'unthrottled localhost','scene':data}
+  data=host.evaluate('(e)=>({...e.dataset})');canvas=host.locator('canvas').evaluate('(c)=>{const g=c.getContext("webgl2");return {width:c.width,height:c.height,context:g.getContextAttributes(),samples:g.getParameter(g.SAMPLES),version:g.getParameter(g.VERSION)}}');run={'cpu_throttle':rate,'network':f'{mbps}Mbps/80ms' if mbps else 'unthrottled localhost','scene':data,'canvas':canvas}
   page.evaluate("window.__bench=[];window.__prev=0;new MutationObserver(()=>{let e=document.querySelector('[data-fabric-scene]'),n=performance.now();if(e.dataset.grabbed){window.__bench.push({cpu:Number(e.dataset.cpuFrameMs),delta:window.__prev?n-window.__prev:0});window.__prev=n}else window.__prev=0}).observe(document.querySelector('[data-fabric-scene]'),{attributes:true,attributeFilter:['data-render-count']})")
   for name,y,dy in [('top',145,35),('bottom',708,-35)]:
    cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':195,'y':y,'id':1}]})

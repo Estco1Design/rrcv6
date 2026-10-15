@@ -66,7 +66,7 @@ with sync_playwright() as p:
  # Skip while resources are still pending must not wait for them or enter the public site.
  context=browser.new_context(viewport={'width':320,'height':568},reduced_motion='no-preference');page=context.new_page();watch(page);held=[];page.route('**/intro/titanium-shears*.glb',lambda route:held.append(route));page.goto(base+'/');page.get_by_role('button',name='Пропустить',exact=True).click();ready(page);expect(page.get_by_role('button',name='ВОЙТИ',exact=True)).to_be_enabled();expect(page.locator('[data-fabric-scene]')).to_have_count(0);no_overflow(page);[route.abort() for route in held];page.unroute_all(behavior='ignoreErrors');context.close()
  # Skip while the dynamic scene module itself is pending, then release the script.
- chunk=next(path.name for path in (root/'.next/static/chunks').glob('*.js') if 'titanium-shears.glb' in path.read_text())
+ chunk=next(path.name for path in (root/'.next/static/chunks').glob('*.js') if 'approved-reference' in path.read_text())
  context=browser.new_context(viewport={'width':390,'height':844},reduced_motion='no-preference');page=context.new_page();watch(page);held=[];requests=[];page.on('request',lambda request:requests.append(request.url))
  def hold_module(route):held.append(route);page.evaluate('window.__sceneModuleHeld=true')
  page.route('**/_next/static/chunks/'+chunk,hold_module);page.goto(base+'/',wait_until='domcontentloaded');page.wait_for_function('window.__sceneModuleHeld===true');page.get_by_role('button',name='Пропустить',exact=True).click();ready(page)

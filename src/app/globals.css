@@ -586,3 +586,12 @@ a:active,button:not(:disabled):active { opacity:.68; }
 /* SVG paths have no CSS layout box on mobile. Apply gesture policy to their
    SVG ancestor; pointer-events:none keeps the aperture/menu outside that policy. */
 .rrc-cloth-pointers { touch-action:pinch-zoom; }
+
+/* Approved reference composition: scoped entrance type, no global font changes. */
+.rrc-cut-title h2 { font-family:"Helvetica Neue",Arial,sans-serif; font-weight:300; font-size:clamp(24px,3.3vw,48px); letter-spacing:-.025em; }
+.rrc-cut-intro[data-intro-ready="true"] .rrc-cut-title { background:transparent; }
+.rrc-cut-intro[data-intro-fallback="true"]::before { content:""; position:absolute; inset:0; z-index:0; background:url('/intro/cloth-plate.webp') center/100% 100% no-repeat; pointer-events:none; }
+@media(max-width:767px) {
+ .rrc-cut-title h2 { font-size:clamp(18.5px,4.75vw,24px); letter-spacing:-.03em; }
+ .rrc-cut-intro[data-intro-fallback="true"]::before { background-image:url('/intro/cloth-plate-mobile.webp'); }
+}

@@ -1,0 +1,12 @@
+{
+  "kind": "actual production Chromium screenshots, controlled clock",
+  "frames": 112,
+  "fps": 24,
+  "viewport": [
+    960,
+    540
+  ],
+  "physical_phone": false,
+  "fps_benchmark": false,
+  "errors": []
+}

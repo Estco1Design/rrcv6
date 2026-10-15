@@ -1,0 +1,30 @@
+{
+  "profiles": [
+    {
+      "meshes": 7,
+      "vertices": 42077,
+      "triangles": 68170,
+      "renderer": {
+        "frame": 10,
+        "calls": 7,
+        "triangles": 68170,
+        "points": 0,
+        "lines": 0
+      }
+    },
+    {
+      "meshes": 7,
+      "vertices": 21323,
+      "triangles": 32718,
+      "renderer": {
+        "frame": 10,
+        "calls": 7,
+        "triangles": 32718,
+        "points": 0,
+        "lines": 0
+      }
+    }
+  ],
+  "errors": [],
+  "real_phone": false
+}

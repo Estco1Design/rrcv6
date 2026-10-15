@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RRC / reference shears — inspection</title>
+<style>body{margin:0;background:#aaa;font:12px Arial}canvas{display:block}nav{position:fixed;bottom:18px;left:20px;display:flex;gap:8px}button{padding:10px;border:1px solid #888;background:#ddd;color:#111;cursor:pointer}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<nav><button data-pose="closed">CLOSED</button><button data-pose="half">HALF OPEN</button><button data-pose="angle">THICKNESS</button><button data-bg="black">BLACK CLOTH LIGHT</button><button data-bg="neutral">NEUTRAL</button></nav>
+<script type="module">
+import * as T from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const mobile=new URLSearchParams(location.search).has('mobile');
+const r=new T.WebGLRenderer({antialias:true});r.setPixelRatio(1);r.setSize(innerWidth,innerHeight);r.toneMapping=T.ACESFilmicToneMapping;r.outputColorSpace=T.SRGBColorSpace;document.body.append(r.domElement);
+const s=new T.Scene(),c=new T.OrthographicCamera(-1.48,1.65,.96,-.96,.01,12);c.position.set(0,0,4);
+const raw=await(await fetch('/public/intro/studio-hdr-cubeuv.bin')).arrayBuffer();const env=new T.DataTexture(new Uint16Array(raw),384,512,T.RGBAFormat,T.HalfFloatType);env.colorSpace=T.LinearSRGBColorSpace;env.needsUpdate=true;env.mapping=T.CubeUVReflectionMapping;env.generateMipmaps=false;env.minFilter=env.magFilter=T.LinearFilter;
+const key=new T.DirectionalLight(0xfffaf3,1.1);key.position.set(-2,3,4);s.add(key);
+const model=(await new GLTFLoader().loadAsync('/public/intro/titanium-shears'+(mobile?'-mobile':'')+'.glb')).scene;s.add(model);
+model.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new T.MeshPhysicalMaterial({color:m.color,metalness:1,roughness:m.roughness,normalMap:m.normalMap,normalScale:m.normalScale,envMap:env,envMapIntensity:.9,envMapRotation:new T.Euler(.35,.6,0),anisotropy:0})}});
+const upper=model.getObjectByName('UpperArm'),lower=model.getObjectByName('LowerArm');
+window.pose=(name)=>{let a=name==='closed'?.012:name==='half'?.085:.125;upper.rotation.z=a;lower.rotation.z=-a;model.rotation.set(name==='angle'?.52:0,name==='angle'?-.20:0,0);r.render(s,c);document.body.dataset.pose=name};
+window.background=(name)=>{r.setClearColor(name==='black'?0x080808:0xaaaaaa);window.pose(document.body.dataset.pose||'closed')};
+window.debug={model,key,renderer:r,scene:s,camera:c};
+for(const b of document.querySelectorAll('[data-pose]'))b.onclick=()=>window.pose(b.dataset.pose);for(const b of document.querySelectorAll('[data-bg]'))b.onclick=()=>window.background(b.dataset.bg);
+window.background('neutral');await r.compileAsync(s,c);window.pose('closed');window.ready=true;
+</script>

@@ -1,0 +1,102 @@
+{
+  "recording_pointer_aid": true,
+  "browser": "Chromium, Linux Xeon 8573C, 5 vCPU, SwiftShader",
+  "real_phone": false,
+  "cases": [
+    {
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "profile": "desktop",
+      "startup": {
+        "colorFetchMs": 188.59999999403954,
+        "modelFetchMs": 193.59999999403954,
+        "modelParseMs": 15.699999988079071,
+        "studioFetchMs": 196.7000000178814,
+        "colorDecodeMs": 124,
+        "resourcesReadyMs": 835.9000000059605,
+        "textureUploadSubmitMs": 2.899999976158142,
+        "textureUploadCompleteWallMs": 369.59999999403954,
+        "shaderCompileMs": 15.299999982118607,
+        "gpuWarmupMs": 472.90000000596046,
+        "readyMs": 1836.9000000059605
+      },
+      "first_shown_navigation_ms": "5034.800000011921",
+      "pixel_count": "921600",
+      "vertices": "13202",
+      "checks": [
+        "top hover",
+        "top mouse drag",
+        "top release outside",
+        "bottom hover",
+        "bottom mouse drag",
+        "bottom release outside",
+        "pointercancel",
+        "lostpointercapture",
+        "resize during capture",
+        "hidden handler cancellation/pause",
+        "private input after interaction",
+        "replay and skip",
+        "public entry/unmount"
+      ],
+      "cpu_frame": {
+        "n": 38,
+        "p50_ms": 3.1499999910593033,
+        "p95_ms": 15.099999994039536
+      },
+      "observed_render_interval": {
+        "n": 32,
+        "p50_ms": 216.25,
+        "p95_ms": 468.90000000596046
+      }
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 3,
+      "profile": "mobile",
+      "startup": {
+        "colorFetchMs": 91,
+        "studioFetchMs": 202.09999999403954,
+        "colorDecodeMs": 148.09999999403954,
+        "modelFetchMs": 832.7999999821186,
+        "modelParseMs": 37.5,
+        "resourcesReadyMs": 1735.699999988079,
+        "textureUploadSubmitMs": 2.5999999940395355,
+        "textureUploadCompleteWallMs": 615.2999999821186,
+        "shaderCompileMs": 15.5,
+        "gpuWarmupMs": 756.1999999880791,
+        "readyMs": 3497.4000000059605
+      },
+      "first_shown_navigation_ms": "7502",
+      "pixel_count": "718848",
+      "vertices": "7458",
+      "checks": [
+        "top touch drag",
+        "top release outside",
+        "bottom touch drag",
+        "bottom release outside",
+        "touch cancellation",
+        "additional finger",
+        "hidden handler cancellation/pause",
+        "private input after interaction",
+        "replay and skip",
+        "public entry/unmount"
+      ],
+      "cpu_frame": {
+        "n": 73,
+        "p50_ms": 3.0999999940395355,
+        "p95_ms": 20.299999982118607
+      },
+      "observed_render_interval": {
+        "n": 68,
+        "p50_ms": 172.8999999910593,
+        "p95_ms": 515.3000000119209
+      }
+    }
+  ]
+}

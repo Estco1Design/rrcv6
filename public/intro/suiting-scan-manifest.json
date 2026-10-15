@@ -1,81 +1,82 @@
 {
-  "asset": "Fabric083",
-  "origin": "https://ambientcg.com/view?id=Fabric083",
+  "asset": "poly_wool_herringbone",
+  "origin": "https://polyhaven.com/a/poly_wool_herringbone",
   "license": "CC0-1.0",
-  "license_url": "https://docs.ambientcg.com/license/",
-  "author": "ambientCG / Lennart Demes",
-  "creation_method": "PBRMultiAngle (height field photogrammetry)",
+  "license_url": "https://polyhaven.com/license",
+  "authors": {
+    "colormass": "Photography",
+    "Rico Cilliers": "Processing"
+  },
   "source_dimensions": [
     4096,
-    4096
+    4181
   ],
-  "normal_and_displacement_native_bits": 16,
-  "physical_dimensions": "Not specified by provider. Artistic UV calibration uses 0.12m tile; not a measured swatch size.",
+  "source_encoding": "Linear half-float EXR; native 4K, not upscaled",
+  "physical_swatch_mm": [
+    270.0788548673393,
+    275.70000290870667
+  ],
   "source_maps": [
     {
-      "map": "color",
-      "file": "Fabric083_4K-PNG_Color.png",
-      "bytes": 29948752,
-      "sha256": "ebf338a81fdeeae34c17e79655e26df3fc8ffe4448dec53c7aca237316c4fa29"
+      "map": "Diffuse",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/4k/poly_wool_herringbone/poly_wool_herringbone_diff_4k.exr",
+      "bytes": 23738112,
+      "md5": "48f7f2ccfab2831dd1865269e8587d4c",
+      "sha256": "752f84d5092ea732fcf43d727c81475edbf9ae31a3377e89be59eaf855b8f3fe"
     },
     {
-      "map": "normal",
-      "file": "Fabric083_4K-PNG_NormalGL.png",
-      "bytes": 87969325,
-      "sha256": "dfaa3c27f2269e928d46043f4edf02e64d4ab6dce5beab47f87efff0e1b7dfe6"
+      "map": "nor_gl",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/4k/poly_wool_herringbone/poly_wool_herringbone_nor_gl_4k.exr",
+      "bytes": 29735024,
+      "md5": "af44dd196d025efeaf2967f9ede231a3",
+      "sha256": "c114255a5faf553b859accf87633aa5a828a08211b19ec1abe69f912dd090b3b"
     },
     {
-      "map": "roughness",
-      "file": "Fabric083_4K-PNG_Roughness.png",
-      "bytes": 4322631,
-      "sha256": "7ee08b3bc8df1a63b290d451314a88e34366033379881061d0438cff34b94c14"
-    },
-    {
-      "map": "displacement",
-      "file": "Fabric083_4K-PNG_Displacement.png",
-      "bytes": 25829086,
-      "sha256": "738dc35969c095273452c328cdadb178f54362b3b48c047ec3b9d0af25c6481e"
+      "map": "Rough",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/exr/4k/poly_wool_herringbone/poly_wool_herringbone_rough_4k.exr",
+      "bytes": 21237605,
+      "md5": "cb9e25e1bfd0ebef440b9b7b61d1ff8e",
+      "sha256": "b9456b1d67b78f75d319af7a6c5262fb2742fde29aaa168a634ca11868da0456"
     }
   ],
-  "source_archive": "https://ambientcg.com/get?file=Fabric083_4K-PNG.zip",
   "runtime_maps": [
     {
       "file": "suiting-scan-color-desktop.webp",
       "dimensions": [
         2048,
-        2048
+        2090
       ],
-      "bytes": 713076,
-      "sha256": "16a575f205103115dcf7f113caf90f13d73bfafd648d73df1601fd2f82aea50d"
+      "bytes": 486774,
+      "sha256": "6c0e736ba002abe5a6a60ef730c23cfbcd2e3fc128450225758d5060f6b01fa7"
     },
     {
       "file": "suiting-scan-surface-desktop.webp",
       "dimensions": [
         2048,
-        2048
+        2090
       ],
-      "bytes": 5910860,
-      "sha256": "86b0c31d1e5a15469b7bf7b2304834794dbf712a2be010ff5f2340a50f11fc30"
+      "bytes": 8606482,
+      "sha256": "86984cb5c29a6b2e5e746f44b0a27aea82aee270198acd4e8befed9b877f8443"
     },
     {
       "file": "suiting-scan-color-mobile.webp",
       "dimensions": [
         1024,
-        1024
+        1045
       ],
-      "bytes": 283834,
-      "sha256": "09b522c593dc4039f67733c9e389387c3f55917bda6dd3e7b24de1c44fd89c97"
+      "bytes": 140670,
+      "sha256": "cfb1599ebefc21f465d2d568781fadd9aa503e55440c5ec013bdd328479bf47c"
     },
     {
       "file": "suiting-scan-surface-mobile.webp",
       "dimensions": [
         1024,
-        1024
+        1045
       ],
-      "bytes": 1846654,
-      "sha256": "7c45d322db78aefcd30b02bafc7678271e26f9dd4873fdaa4fcec314ac14d6be"
+      "bytes": 2396142,
+      "sha256": "3897603988d5ed604e7b219e2a33cb4976b6f14a286f90e8c816f9d135c84f1c"
     }
   ],
-  "black_dye": "Uniform black dye replaces broad check pigment, retaining photographed fine luminance variation. Normal and roughness are the original scan, downsampled and packed, never generated.",
-  "encoding": "RGB: OpenGL normal XY + linear roughness B. Reconstruct normal Z with Three USE_PACKED_NORMALMAP."
+  "black_dye": "Uniform linear multiplier; photographed yarn variations preserved, no invented noise",
+  "encoding": "RGB = OpenGL normal XY, roughness B; shader reconstructs normal Z independently of roughness."
 }

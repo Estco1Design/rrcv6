@@ -71,3 +71,14 @@ export function clothEdge(
     gap = sign > 0 ? 0.1 : -0.11;
   return seam + release * (gap + (finalY - seam - gap) * shot.spread);
 }
+
+/** A small wrist roll gives real moving reflections without moving the cut line.
+ * Rotate around the honed contact plane, rather than around the GLB origin.
+ */
+export function shearPresentation(seconds:number, scale:number, contactY=.04, contactZ=.286) {
+  const shot=cutFrame(seconds);
+  const exit=smooth((seconds-3)/.7);
+  const roll=seconds<1.3 ? .11-.03*shot.entry : seconds>=3 ? .08+.03*exit
+    : .08+.01*Math.sin((seconds-1.3)/1.7*8*Math.PI);
+  return {roll,y:contactY+.226*scale*Math.sin(roll),z:contactZ-.226*scale*Math.cos(roll)};
+}

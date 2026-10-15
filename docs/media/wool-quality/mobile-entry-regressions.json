@@ -1,0 +1,16 @@
+{
+  "passed": [
+    "black fallback",
+    "private return in public header",
+    "private menu item",
+    "no repeated intro",
+    "touch hold brief",
+    "release does not navigate",
+    "keyboard brief / Escape",
+    "scroll cancels hold",
+    "private logout hides return",
+    "ordinary product tap"
+  ],
+  "physical_phone": false,
+  "errors": []
+}

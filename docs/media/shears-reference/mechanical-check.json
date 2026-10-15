@@ -1,0 +1,96 @@
+{
+  "source": "scripts/model-source/shears/reference-shears.blend",
+  "solids": [
+    {
+      "object": "UpperForgedArm",
+      "components": 1,
+      "nonmanifold_edges": 0,
+      "volume": 0.017570611111132152,
+      "vertices": 17647
+    },
+    {
+      "object": "LowerForgedArm",
+      "components": 1,
+      "nonmanifold_edges": 0,
+      "volume": 0.014630353271811888,
+      "vertices": 14406
+    },
+    {
+      "object": "SharedPivot",
+      "components": 1,
+      "nonmanifold_edges": 0,
+      "volume": 0.0009172187847284653,
+      "vertices": 2030
+    }
+  ],
+  "poses": [
+    {
+      "half_angle_radians": 0.012,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.021124999999999998,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.03025,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.03937499999999999,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.0485,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.057624999999999996,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.06674999999999999,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.075875,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.08499999999999999,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.09412499999999999,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.10325,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.11237499999999999,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.12149999999999998,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.130625,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.13975,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.148875,
+      "intersection_volume": 0.0
+    },
+    {
+      "half_angle_radians": 0.158,
+      "intersection_volume": 0.0
+    }
+  ]
+}

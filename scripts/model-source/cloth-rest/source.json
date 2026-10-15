@@ -1,0 +1,12 @@
+{
+  "columns": 96,
+  "rows": 48,
+  "profiles": {
+    "desktop": 1.7777777777777777,
+    "mobile": 0.46208530805687204
+  },
+  "frames": 56,
+  "author": "RRC offline Blender cloth simulation",
+  "pins": "outer and side edges",
+  "license": "Original project geometry; no third-party model"
+}

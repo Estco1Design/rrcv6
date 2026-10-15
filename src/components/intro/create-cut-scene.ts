@@ -4,6 +4,7 @@ import {
 } from "./packed-cloth-material";
 import * as THREE from "three";
 import { ClothDynamics } from "./cloth-dynamics";
+import { ClothRest } from "./cloth-rest";
 import { clothContour, ClothSurfaceSampling } from "./cloth-surface";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
@@ -13,6 +14,7 @@ import {
   SHEAR_WIDTH_RATIO,
   cutRelease,
   clothEdge,
+  shearPresentation,
 } from "./cut-timeline";
 
 const topEdge = [0.31, 0.29, 0.205, 0.23, 0.3, 0.34, 0.355, 0.37, 0.4];
@@ -35,10 +37,11 @@ export async function createCutScene(
 ): Promise<CutScene> {
   if (signal.aborted) throw new DOMException("Aborted", "AbortError");
   const started = performance.now();
-  const mobile = host.clientWidth < 768;
+  const mobile = host.clientWidth < 768 ||
+    (matchMedia("(pointer: coarse)").matches && Math.min(host.clientWidth,host.clientHeight)<768);
   const renderer = new THREE.WebGLRenderer({
     alpha: true,
-    antialias: !mobile,
+    antialias: true,
     powerPreference: "low-power",
   });
   renderer.setClearColor(0x000000, 0);
@@ -61,12 +64,12 @@ export async function createCutScene(
     interactive = false,
     prepared = false;
   const profile = {
-    columns: mobile ? 80 : 128,
-    rows: mobile ? 36 : 48,
+    columns: mobile ? 96 : 128,
+    rows: mobile ? 40 : 48,
     physicsColumns: 24,
     physicsRows: 20,
-    pixels: mobile ? 480_000 : 1_100_000,
-    dpr: mobile ? 1.25 : 1.3,
+    pixels: mobile ? 720_000 : 1_100_000,
+    dpr: mobile ? 1.6 : 1.3,
   };
   host.dataset.profile = mobile ? "mobile" : "desktop";
   const timings: Record<string, number> = {};
@@ -200,7 +203,7 @@ export async function createCutScene(
       return value;
     };
     const suffix = mobile ? "mobile" : "desktop";
-    const [intact, surface, studio, gltf, gathersBuffer] = await Promise.all([
+    const [intact, surface, studio, gltf, drapeBuffer] = await Promise.all([
       loadTexture(`/intro/suiting-scan-color-${suffix}.webp`, "color"),
       loadTexture(
         `/intro/suiting-scan-surface-${suffix}.webp`,
@@ -208,13 +211,12 @@ export async function createCutScene(
       ),
       loadStudio(),
       loadModel(),
-      fetch("/intro/cloth-gathers.bin", { signal }).then((r) => {
+      fetch("/intro/cloth-rest.bin", { signal }).then((r) => {
         if (!r.ok) throw new Error("Missing cloth shape");
         return r.arrayBuffer();
       }),
     ]);
-    const gathers = new Float32Array(gathersBuffer);
-    if (gathers.length !== 257 * 257) throw new Error("Invalid cloth shape");
+    const drape = new ClothRest(drapeBuffer);
     timings.resourcesReadyMs = performance.now() - started;
     const prepareStart = performance.now();
     // A request can finish after unmount; dispose late resources as well.
@@ -242,7 +244,7 @@ export async function createCutScene(
     const ambient = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambient);
     const key = new THREE.DirectionalLight(0xfffaf3, 1.4);
-    key.position.set(-2, 2, 0.65);
+    key.position.set(-2, 2, .9);
     key.castShadow = !mobile;
     key.shadow.mapSize.set(mobile ? 512 : 1024, mobile ? 512 : 1024);
     key.shadow.radius = 3;
@@ -251,21 +253,25 @@ export async function createCutScene(
     key.shadow.camera.near = 0.1;
     key.shadow.camera.far = 8;
     scene.add(key);
+    const fill = new THREE.DirectionalLight(0xf4f6ff, .8);
+    fill.position.set(1, -.5, 4);
+    scene.add(fill);
     const cloth = new THREE.MeshPhysicalMaterial({
       map: intact,
       normalMap: surface,
-      normalScale: new THREE.Vector2(1, 1),
-      color: new THREE.Color(0.98, 0.98, 1),
+      normalScale: new THREE.Vector2(.7, .7),
+      color: new THREE.Color(.6, .6, .6),
       roughness: 1,
       roughnessMap: surface,
       metalness: 0,
       ior: 1.45,
-      specularIntensity: 0.25,
-      sheen: mobile ? 0 : 0.5,
-      sheenColor: new THREE.Color(0.07, 0.07, 0.075),
-      sheenRoughness: 1,
+      specularIntensity: .35,
+      sheen: .35,
+      sheenColor: new THREE.Color(.18, .18, .18),
+      sheenRoughness: .85,
       envMap: mobile ? null : studio,
       envMapIntensity: mobile ? 0 : 0.4,
+      envMapRotation: new THREE.Euler(.35, .6, 0),
       side: THREE.DoubleSide,
     });
     // R/G contain photographed normal XY; B contains measured roughness.
@@ -274,7 +280,7 @@ export async function createCutScene(
     cloth.defines = { ...cloth.defines, ...packedClothDefines };
     const packedWool = patchPackedClothShader;
     cloth.onBeforeCompile = packedWool;
-    cloth.customProgramCacheKey = () => "rrc-scanned-wool-rg-b-hdr-v2";
+    cloth.customProgramCacheKey = () => "rrc-poly-wool-rg-b-hdr-v4";
     const panels = [1, -1].map((sign) => {
       const geometry = new THREE.PlaneGeometry(
           2,
@@ -289,11 +295,26 @@ export async function createCutScene(
         u: uv.getX(i),
         v: uv.getY(i),
       }));
+      // The lower sheet reverses the plane's Y parameterization. Keep its
+      // front-face winding and shadow bias consistent with the upper sheet.
+      if(sign<0){
+        const index=geometry.getIndex();
+        if(index)for(let i=0;i<index.count;i+=3){
+          const b=index.getX(i+1);index.setX(i+1,index.getX(i+2));index.setX(i+2,b);
+        }
+      }
       uv.needsUpdate = true;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       scene.add(mesh);
       mesh.name = sign === 1 ? "top" : "bottom";
+      // A 1 mm rounded cut cross-section, sharing the photographed material.
+      // Not a luminous outline or a transparent copy of the main sheet.
+      const edgeGeometry=new THREE.PlaneGeometry(2,.004,profile.columns,4);
+      const edgeMesh=new THREE.Mesh(edgeGeometry,cloth);
+      edgeMesh.name=mesh.name+" cut thickness";
+      edgeMesh.castShadow=false;edgeMesh.receiveShadow=false;
+      scene.add(edgeMesh);
       const dynamics = new ClothDynamics(
         profile.physicsColumns + 1,
         profile.physicsRows + 1,
@@ -308,6 +329,8 @@ export async function createCutScene(
       );
       return {
         sign,
+        edgeGeometry,
+        edgeMesh,
         sampling,
         geometry,
         position,
@@ -319,60 +342,12 @@ export async function createCutScene(
         wasActive: false,
         uvAspect: 0,
         restUV: new Float32Array(position.count * 2),
+        foldHeights: new Float32Array(position.count),
+        closedHeights: new Float32Array(position.count),
+        restOffsets: new Float32Array(position.count*3),
+        seamHeights: new Float32Array(position.count),
       };
     });
-    // A connected, intact textile surface covers the seam until its cutting contact passes.
-    // This prevents a pre-existing slit or two visibly joined panels at the start.
-    const uncutUniform = { value: -0.1 },
-      uncutMaterial = cloth.clone();
-    // A separate raw UV varying keeps contact masking independent of texture tiling.
-    uncutMaterial.map = intact;
-
-    uncutMaterial.defines = {
-      ...uncutMaterial.defines,
-      USE_PACKED_NORMALMAP: "",
-    };
-    uncutMaterial.onBeforeCompile = (shader) => {
-      packedWool(shader);
-      shader.uniforms.uCut = uncutUniform;
-      shader.vertexShader =
-        "attribute float cutU; varying float vCutU;\n" +
-        shader.vertexShader.replace(
-          "#include <uv_vertex>",
-          "#include <uv_vertex>\nvCutU = cutU;",
-        );
-      shader.fragmentShader =
-        "uniform float uCut; varying float vCutU;\n" +
-        shader.fragmentShader.replace(
-          "#include <map_fragment>",
-          "#include <map_fragment>\nif(vCutU < uCut) discard;",
-        );
-    };
-    uncutMaterial.customProgramCacheKey = () =>
-      "rrc-intact-cut-scanned-rg-b-hdr-v3";
-    const uncutGeometry = new THREE.PlaneGeometry(
-        2,
-        2,
-        profile.columns,
-        profile.rows,
-      ),
-      uncutMesh = new THREE.Mesh(uncutGeometry, uncutMaterial);
-    const uncutPosition = uncutGeometry.attributes.position,
-      uncutUv = uncutGeometry.attributes.uv;
-    const uncutCoords = Array.from({ length: uncutPosition.count }, (_, i) => ({
-      u: uncutUv.getX(i),
-      v: uncutUv.getY(i),
-    }));
-    uncutGeometry.setAttribute(
-      "cutU",
-      new THREE.Float32BufferAttribute(
-        uncutCoords.map((p) => p.u),
-        1,
-      ),
-    );
-    uncutMesh.renderOrder = -1;
-    uncutMesh.receiveShadow = true;
-    scene.add(uncutMesh);
     const shears = new THREE.Group();
     shears.add(gltf.scene);
     scene.add(shears);
@@ -399,6 +374,7 @@ export async function createCutScene(
             roughness: original.roughness,
             envMap: studio,
             envMapIntensity: 0.9,
+            envMapRotation: new THREE.Euler(.35, .6, 0),
             anisotropy: 0,
             anisotropyRotation: 0,
           });
@@ -420,7 +396,7 @@ export async function createCutScene(
       heightPixels = height;
       aspect = width / height;
       for (const texture of [intact, surface])
-        texture.repeat.set(0.25 / 0.12, 0.25 / 0.12);
+        texture.repeat.set(0.25 / .27007885, 0.25 / .2757);
       camera.left = -aspect;
       camera.right = aspect;
       camera.updateProjectionMatrix();
@@ -439,33 +415,6 @@ export async function createCutScene(
       renderer.setSize(width, height);
       if (prepared) render(last);
     }
-    function foldsAt(u: number, v: number) {
-      // Nonperiodic, broad gathered ridges. The two sides have different fold
-      // trajectories; there is no regular sinusoidal sheet or material noise.
-      const q = u;
-      const gaussian = (x: number, center: number, radius: number) =>
-        Math.exp(-(((x - center) / radius) ** 2));
-      const upper = 0.095 * gaussian(v, 0.8 - 0.13 * q + 0.055 * q * q, 0.1);
-      const lower = 0.11 * gaussian(v, 0.17 + 0.16 * q - 0.06 * q * q, 0.09);
-      const gatherLeft =
-        0.11 * gaussian(q, 0.1 + 0.28 * v, 0.075) * gaussian(v, 0.76, 0.36);
-      const gatherRight =
-        0.13 * gaussian(q, 0.73 - 0.27 * v, 0.1) * gaussian(v, 0.2, 0.27);
-      const valley = 0.065 * gaussian(q, 0.42, 0.27) * gaussian(v, 0.49, 0.2);
-      const fx = (0.08 + q * 0.84) * 256,
-        fy = (0.08 + v * 0.84) * 256;
-      const ix = Math.min(255, Math.floor(fx)),
-        iy = Math.min(255, Math.floor(fy)),
-        tx = fx - ix,
-        ty = fy - iy;
-      const at = (a: number, b: number) => gathers[(iy + b) * 257 + ix + a];
-      const secondary =
-        (at(0, 0) * (1 - tx) + at(1, 0) * tx) * (1 - ty) +
-        (at(0, 1) * (1 - tx) + at(1, 1) * tx) * ty;
-      return (
-        1.45 * (upper + lower) + 0.8 * (gatherLeft + gatherRight) - valley + 0.4 * secondary
-      );
-    }
     function render(
       seconds: number,
       interaction = performance.now() / 1000,
@@ -482,11 +431,11 @@ export async function createCutScene(
       host.dataset.renderCount = String(
         Number(host.dataset.renderCount || 0) + 1,
       );
-      ambient.intensity = 0.06 * shot.light;
-      key.intensity = 4 * shot.light;
+      ambient.intensity = .22 * shot.light;
+      fill.intensity = .65 * shot.light;
+      key.intensity = 3.8 * shot.light;
 
       cloth.envMapIntensity = mobile ? 0 : 0.4 * shot.light;
-      uncutMaterial.envMapIntensity = 0.4 * shot.light;
       const scale = aspect * SHEAR_WIDTH_RATIO;
       const initialRoot = 0.04 - (bladeContactOpen() * SHEAR_WIDTH_RATIO) / 2;
       const exit = smooth((seconds - 3) / 0.7);
@@ -502,6 +451,9 @@ export async function createCutScene(
               aspect + scale * 1.4,
               exit,
             );
+      const contactU=clamp(shot.cut<0?.04:shot.cut);
+      const contactY=.04+.013*Math.sin(contactU*7)*(1-shot.spread);
+      const contactZ=shot.tool ? .187+drape.initialHeight(contactU,(contactY+1.035)/2.07,aspect) : .187;
       const press = (u: number, y: number, z: number) => {
         // Only the moving blade footprint exerts pressure, not a viewport-wide slab.
         const xWeight = smooth(
@@ -511,25 +463,16 @@ export async function createCutScene(
             0.04,
         );
         const yWeight = smooth(
-          (0.27 * scale + 0.018 - Math.abs(y - 0.04)) / 0.025,
+          (0.27 * scale + 0.018 - Math.abs(y - contactY)) / 0.025,
         );
         const weight =
           smooth(shot.entry * 6) * (1 - shot.spread) * xWeight * yWeight;
-        return (
-          z +
-          (THREE.MathUtils.clamp(
-            z,
-            0.286 - 0.0003 * aspect * SHEAR_WIDTH_RATIO,
-            0.286 + 0.0003 * aspect * SHEAR_WIDTH_RATIO,
-          ) -
-            z) *
-            weight
-        );
+        return z + THREE.MathUtils.clamp(contactZ-z,-.03,.03)*weight;
       };
       const settle = 0.018 * (1 - smooth(seconds / 0.8));
       for (const panel of panels) {
         const { sign, geometry, position, uv, coords } = panel;
-        panel.mesh.visible = seconds >= 1.3;
+        panel.mesh.visible = true;
         if (panel.uvAspect !== aspect) {
           panel.uvAspect = aspect;
           const edgeScale = Math.min(1, Math.max(0.4, aspect / 0.95));
@@ -541,39 +484,25 @@ export async function createCutScene(
             );
             const center = sign === 1 ? 0.315 : 0.66;
             const edge = 1 - 2 * (center + (reference - center) * edgeScale);
-            const restV = (0.04 + (sign * 1.035 - 0.04) * v + 1) / 2;
             const k = i * 3;
-            panel.base[k] = (u * 2 - 1) * aspect;
-            panel.base[k + 1] = THREE.MathUtils.lerp(edge, sign * 1.035, v);
-            panel.base[k + 2] =
-              0.185 +
-              0.065 *
-                Math.exp(
-                  -Math.pow((v - 0.12 - 0.035 * Math.sin(u * 9)) / 0.1, 2),
-                ) +
-              foldsAt(u, restV) +
-              0.015 * Math.exp(-v * 14);
+            drape.sample(sign,u,v,aspect,panel.restOffsets,k);
+            panel.base[k] = (u * 2 - 1) * aspect + panel.restOffsets[k];
+            panel.base[k + 1] = THREE.MathUtils.lerp(edge, sign * 1.035, v) + panel.restOffsets[k+1];
+            panel.foldHeights[i] = panel.restOffsets[k+2];
+            const closedY=THREE.MathUtils.lerp(.04+.013*Math.sin(u*7),sign*1.035,v);
+            panel.closedHeights[i]=drape.initialHeight(u,(closedY+1.035)/2.07,aspect);
+            panel.seamHeights[i] = edge;
+            panel.base[k + 2] = .185 + panel.foldHeights[i]
+              + .015*Math.exp(-v*14);
           }
-          // Intrinsic arc-length UVs in scene units, not compressed screen-space
-          // half-planes. The photographed weave keeps its physical pitch on mobile.
-          for (let j = 0; j <= profile.rows; j++)
-            for (let i = 0; i <= profile.columns; i++) {
-              const vertex = j * (profile.columns + 1) + i,
-                k = vertex * 3;
-              const distance = (previous: number) =>
-                Math.hypot(
-                  panel.base[k] - panel.base[previous * 3],
-                  panel.base[k + 1] - panel.base[previous * 3 + 1],
-                  panel.base[k + 2] - panel.base[previous * 3 + 2],
-                );
-              panel.restUV[vertex * 2] = i
-                ? panel.restUV[(vertex - 1) * 2] + distance(vertex - 1)
-                : 0;
-              panel.restUV[vertex * 2 + 1] = j
-                ? panel.restUV[(vertex - profile.columns - 1) * 2 + 1] +
-                  distance(vertex - profile.columns - 1)
-                : 0;
-            }
+          // One material coordinate system across the closed seam. The UVs
+          // stay on the fabric during the cut instead of swapping a full layer.
+          for(let i=0;i<coords.length;i++){
+            const {u,v}=coords[i];
+            const closedY=THREE.MathUtils.lerp(.04+.013*Math.sin(u*7),sign*1.035,v);
+            panel.restUV[i*2]=u*2*aspect*1.12;
+            panel.restUV[i*2+1]=closedY*1.08+1.035;
+          }
         }
         if (interactive && seconds >= 4.5) {
           if (!panel.dynamics.active() && !panel.wasActive) continue;
@@ -602,37 +531,22 @@ export async function createCutScene(
         }
         for (let i = 0; i < coords.length; i++) {
           const { u, v } = coords[i];
-          const referenceEdge = clothContour(
-            sign === 1 ? topEdge : bottomEdge,
-            u,
-          );
-          const edgeScale = Math.min(1, Math.max(0.4, aspect / 0.95));
-          const centerEdge = sign === 1 ? 0.315 : 0.66;
-          const finalEdge =
-            centerEdge + (referenceEdge - centerEdge) * edgeScale;
-          // Cut is propagated spatially, with a short delayed response behind contact.
-          const finalY = 1 - 2 * finalEdge;
+          const finalY = panel.seamHeights[i];
           const opened = cutRelease(shot, u);
           const y = THREE.MathUtils.lerp(
             clothEdge(shot, u, sign, finalY, opened),
             sign * 1.035,
             v,
           );
-          const restV = (0.04 + (sign * 1.035 - 0.04) * v + 1) / 2;
-          const folds = foldsAt(u, restV);
+          const folds = THREE.MathUtils.lerp(panel.closedHeights[i],panel.foldHeights[i],opened);
           const curl =
             0.025 * opened * Math.exp(-v * 14) * (1 - shot.spread * 0.4);
-          const currentY = y + settle * Math.sin(u * 7 + v * 3) * v;
+          const currentY = y + panel.restOffsets[i*3+1]*shot.spread + settle * Math.sin(u * 7 + v * 3) * v;
           position.setXYZ(
             i,
-            (u * 2 - 1) * aspect,
+            (u * 2 - 1) * aspect + panel.restOffsets[i*3]*shot.spread,
             currentY,
             0.185 +
-              0.065 *
-                opened *
-                Math.exp(
-                  -Math.pow((v - 0.12 - 0.035 * Math.sin(u * 9)) / 0.1, 2),
-                ) +
               folds +
               curl,
           );
@@ -652,34 +566,45 @@ export async function createCutScene(
           panel.dynamics.setRest(panel.sampling.rest, Math.min(aspect * 2, 2));
         }
       }
+      for(const panel of panels){
+        const p=panel.edgeGeometry.attributes.position,tuv=panel.edgeGeometry.attributes.uv;
+        const first=profile.rows*(profile.columns+1);
+        panel.edgeMesh.visible=shot.cut>0;
+        for(let row=0;row<=4;row++)for(let col=0;col<=profile.columns;col++){
+          const i=first+col,k=row*(profile.columns+1)+col,t=row/4,open=cutRelease(shot,col/profile.columns);
+          p.setXYZ(k,panel.position.getX(i),panel.position.getY(i)-panel.sign*.002*Math.sin(Math.PI*t)*open,panel.position.getZ(i)-.004*t*open);
+          tuv.setXY(k,panel.uv.getX(i),panel.uv.getY(i)+.004*t);
+        }
+        p.needsUpdate=true;tuv.needsUpdate=true;panel.edgeGeometry.computeVertexNormals();panel.edgeGeometry.computeBoundingSphere();
+      }
       if (seconds >= 4.5) interactive = true;
       physicsClock = interaction;
-      uncutUniform.value = seconds < 1.3 ? -0.1 : shot.cut;
-      uncutMesh.visible = seconds < 3;
-      uncutMesh.castShadow = seconds < 1.3;
-      if (uncutMesh.visible) {
-        for (let i = 0; i < uncutPosition.count; i++) {
-          const { u, v } = uncutCoords[i];
-          const fold = foldsAt(u, ((v * 2 - 1) * 1.035 + 1) / 2);
-          const currentY =
-            (v * 2 - 1) * 1.035 + settle * Math.sin(u * 7 + v * 3);
-          uncutPosition.setXYZ(i, (u * 2 - 1) * aspect, currentY, 0.187 + fold);
-          uncutPosition.setZ(
-            i,
-            press(u, currentY, uncutPosition.getZ(i)) + 0.00015,
-          );
-          uncutUv.setXY(i, u * 2 * aspect, currentY + 1.035);
+      // Weld the shading of the two touching borders until the cutting
+      // contact separates them. There is no full-height cut/reveal plane.
+      if(seconds<3.7){
+        const top=panels[0].geometry.attributes.normal;
+        const bottom=panels[1].geometry.attributes.normal;
+        const first=profile.rows*(profile.columns+1);
+        for(let col=0;col<=profile.columns;col++){
+          const weight=1-smooth(cutRelease(shot,col/profile.columns)/.12);
+          if(weight===0)continue;
+          const i=first+col;
+          let nx=top.getX(i)+bottom.getX(i),ny=top.getY(i)+bottom.getY(i),nz=top.getZ(i)+bottom.getZ(i);
+          const length=Math.hypot(nx,ny,nz)||1;nx/=length;ny/=length;nz/=length;
+          const tx=top.getX(i)*(1-weight)+nx*weight,ty=top.getY(i)*(1-weight)+ny*weight,tz=top.getZ(i)*(1-weight)+nz*weight;
+          const bx=bottom.getX(i)*(1-weight)+nx*weight,by=bottom.getY(i)*(1-weight)+ny*weight,bz=bottom.getZ(i)*(1-weight)+nz*weight;
+          const tl=Math.hypot(tx,ty,tz)||1,bl=Math.hypot(bx,by,bz)||1;
+          top.setXYZ(i,tx/tl,ty/tl,tz/tl);bottom.setXYZ(i,bx/bl,by/bl,bz/bl);
         }
-        uncutPosition.needsUpdate = true;
-        uncutUv.needsUpdate = true;
-        uncutGeometry.computeVertexNormals();
+        top.needsUpdate=true;bottom.needsUpdate=true;
       }
       // Uniform scale preserves 3D proportions and normals on phones.
       shears.scale.setScalar(scale);
       upper.rotation.z = shot.blade;
       lower.rotation.z = -shot.blade;
-      shears.rotation.set(0, 0, 0);
-      shears.position.set(hingeX, 0.04, 0.286 - 0.226 * scale);
+      const presentation = shearPresentation(seconds, scale, contactY, contactZ);
+      shears.rotation.set(presentation.roll, 0, 0);
+      shears.position.set(hingeX, presentation.y, presentation.z);
       shears.visible = shot.tool;
       if (interactive) updateClips();
       if (!draw) return;

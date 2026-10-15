@@ -1,3 +1,7 @@
+Текущая версия после нового скриншота: [возврат утверждённой ткани](reference-cloth-restoration.md). Ниже — история предыдущего PBR-варианта.
+
+> Текущая версия: [переработка ткани и ножниц](intro-wool-quality.md). Форма заменена четырьмя офлайн-симуляциями Blender; материал — фотографический Poly Haven Poly Wool Herringbone (4096×4181); технические данные Fabric083 ниже относятся к предыдущему проходу.
+
 # RRC — photographic textile and HDR revision, 2026-10-14
 
 Only the entrance is changed. Existing fonts, fixed HTML name, both entrances, PRIVATE ACCESS authorization, skip/session/reduced-motion/failure behavior and the rest of the site remain. No deployment or main merge. frontend-design was not used.

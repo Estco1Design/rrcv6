@@ -1,0 +1,53 @@
+[
+  {
+    "viewport": [
+      1280,
+      720
+    ],
+    "source": "cloth-plate.webp",
+    "cloth_region_mean_absolute_error_255": [
+      0.757,
+      0.679
+    ],
+    "type": {
+      "family": "\"Helvetica Neue\", Arial, sans-serif",
+      "size": "42.24px",
+      "width": 530.28125
+    },
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      664
+    ],
+    "source": "cloth-plate-mobile.webp",
+    "cloth_region_mean_absolute_error_255": [
+      1.026,
+      2.019
+    ],
+    "type": {
+      "family": "\"Helvetica Neue\", Arial, sans-serif",
+      "size": "18.525px",
+      "width": 230.625
+    },
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "source": "cloth-plate-mobile.webp",
+    "cloth_region_mean_absolute_error_255": [
+      1.034,
+      1.958
+    ],
+    "type": {
+      "family": "\"Helvetica Neue\", Arial, sans-serif",
+      "size": "18.525px",
+      "width": 230.625
+    },
+    "errors": []
+  }
+]

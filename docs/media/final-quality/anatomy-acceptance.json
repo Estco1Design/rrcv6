@@ -1,0 +1,61 @@
+{
+  "physical_phone": false,
+  "browser": "Chromium / SwiftShader",
+  "cases": [
+    {
+      "form": "male",
+      "checks": [
+        "all three fitted hair styles",
+        "front/side/back",
+        "relaxed pose",
+        "native morph extrema and reset",
+        "measurements unchanged"
+      ],
+      "timings": {
+        "bodyModel": "ready",
+        "bodyForm": "male",
+        "bodyHair": "short01",
+        "bodyIdle": "true",
+        "bodyBuild": "0",
+        "bodyRenderCount": "23",
+        "bodyFetchMs": "559.9",
+        "bodyCompileMs": "38.8",
+        "bodyFirstFrameMs": "5388.3",
+        "bodyReadyMs": "5390.5"
+      }
+    },
+    {
+      "form": "female",
+      "checks": [
+        "all three fitted hair styles",
+        "front/side/back",
+        "relaxed pose",
+        "native morph extrema and reset",
+        "measurements unchanged"
+      ],
+      "timings": {
+        "bodyModel": "ready",
+        "bodyForm": "female",
+        "bodyHair": "short01",
+        "bodyIdle": "true",
+        "bodyBuild": "0",
+        "bodyRenderCount": "46",
+        "bodyFetchMs": "401.4",
+        "bodyCompileMs": "70.3",
+        "bodyReadyMs": "4791.1",
+        "bodyFirstFrameMs": "4790.1"
+      }
+    }
+  ],
+  "errors": [],
+  "checks": [
+    "no pre-auth avatar fetch",
+    "touch orbit",
+    "hidden pause",
+    "idle render stop",
+    "corrupt hair fallback",
+    "measurement persistence",
+    "GPU scenes absent after leaving",
+    "test account deleted"
+  ]
+}

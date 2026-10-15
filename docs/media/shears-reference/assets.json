@@ -1,0 +1,17 @@
+[
+  {
+    "path": "public/intro/titanium-shears.glb",
+    "bytes": 2105144,
+    "sha256": "435122b778939c0a94c9b07c4349e510c0fed911d56a749c44f4d2a9b427fb97"
+  },
+  {
+    "path": "public/intro/titanium-shears-mobile.glb",
+    "bytes": 1062208,
+    "sha256": "c8d3e171883d8b6069c6cc4a9a240f99a7eb5ff10a5c91804372e9efaa4fada0"
+  },
+  {
+    "path": "scripts/model-source/shears/reference-shears.blend",
+    "bytes": 9073100,
+    "sha256": "c5c6867480f12a3a6a666212e338bebc730125e8b6f782dfb49807eecb7fb835"
+  }
+]

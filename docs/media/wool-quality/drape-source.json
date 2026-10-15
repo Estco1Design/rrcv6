@@ -1,0 +1,20 @@
+{
+  "author": "RRC",
+  "method": "Blender cloth simulation: compressed pinned exterior, gravity, rounded collision forms, self-collision; original geometry, no photographed shading",
+  "columns": 96,
+  "rows": 48,
+  "frames": 56,
+  "profiles": [
+    "desktop-top",
+    "desktop-bottom",
+    "mobile-top",
+    "mobile-bottom"
+  ],
+  "runtime_bytes": 228160,
+  "sha256": "12ab09ae1df1b8cf2a4de9d717db25caed794dff81a62e0c2e788300f993d499",
+  "geometry_smoothing_cells": [
+    1.6,
+    1.8
+  ],
+  "adaptation": "In-plane offsets fitted to approved aperture; source depth scaled uniformly. Texture UVs and lighting remain independent."
+}

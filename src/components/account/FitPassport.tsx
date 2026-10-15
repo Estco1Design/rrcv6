@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   measurements,
@@ -25,6 +25,14 @@ export function FitPassport({
   onChange: (values: AccountProfile["measurements"]) => void;
   ru: boolean;
 }) {
+  const modelGate=useRef<HTMLDivElement>(null);
+  const [showModel,setShowModel]=useState(false);
+  useEffect(()=>{
+    const element=modelGate.current;if(!element)return;
+    if(!('IntersectionObserver' in window)){setShowModel(true);return;}
+    const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){setShowModel(true);observer.disconnect();}},{rootMargin:'160px'});
+    observer.observe(element);return()=>observer.disconnect();
+  },[]);
   const [selected, setSelected] = useState<MeasurementKey>("chest");
   const selectedIndex = measurementKeys.indexOf(selected);
   const current = measurements[selected];
@@ -32,7 +40,7 @@ export function FitPassport({
   return (
     <div className="grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 items-start">
       <div className="min-w-0">
-        <BodyModel selected={selected} value={values[selected]} ru={ru} />
+        <div ref={modelGate} className="min-h-[520px]">{showModel?<BodyModel selected={selected} value={values[selected]} ru={ru} />:<p className="text-xs text-rrc-off py-12">{ru?"3D-ориентир мерок":"3D measurement guide"}</p>}</div>
         <div
           className="mt-5 border-l-2 border-[#efb7a0] pl-4"
           aria-live="polite"

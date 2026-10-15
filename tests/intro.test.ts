@@ -193,3 +193,34 @@ test("forged shear arms have opposite-side grips that separate when the blades o
     "Opening the blades closed the handles",
   );
 });
+
+// Presentation tilt must never reveal letters ahead of the physical cut.
+test("wrist roll keeps the entire blade contact line fixed", async()=>{
+  const {shearPresentation}=await import("../src/components/intro/cut-timeline");
+  const {Vector3}=await import("three");
+  const rolls=new Set<number>();
+  for(const seconds of [.8,1,1.3,1.5,1.8,2.4,3,3.4,3.7])
+    for(const scale of [.25,.7,1.3]) {
+      const pose=shearPresentation(seconds,scale);rolls.add(pose.roll);
+      assert.ok(Math.abs(pose.roll)<.3);
+      const transform=(y:number,z:number)=>new Vector3(0,y,z).multiplyScalar(scale)
+        .applyAxisAngle(new Vector3(1,0,0),pose.roll).add(new Vector3(0,pose.y,pose.z));
+      assert.ok(transform(.12,.245).z>.286,"Upper blade slipped under the cloth");
+      assert.ok(transform(-.12,.217).z<.286,"Lower blade rose above the cloth");
+      for(const x of [0,.3,1.4]) {
+        const point=new Vector3(x,0,.226).multiplyScalar(scale)
+          .applyAxisAngle(new Vector3(1,0,0),pose.roll)
+          .add(new Vector3(.4,pose.y,pose.z));
+        assert.ok(Math.abs(point.x-(.4+x*scale))<1e-12);
+        assert.ok(Math.abs(point.y-.04)<1e-12);
+        assert.ok(Math.abs(point.z-.286)<1e-12);
+      }
+    }
+  const anchored=shearPresentation(1.7,.8,.055,-.03);
+  const tip=new Vector3(.7,0,.226).multiplyScalar(.8)
+    .applyAxisAngle(new Vector3(1,0,0),anchored.roll)
+    .add(new Vector3(0,anchored.y,anchored.z));
+  assert.ok(Math.abs(tip.y-.055)<1e-12&&Math.abs(tip.z+.03)<1e-12,
+    "The tool ignores the actual draped seam height");
+  assert.ok(rolls.size>3,"The instrument never changes its reflection angle");
+});

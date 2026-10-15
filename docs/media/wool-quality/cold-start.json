@@ -1,0 +1,461 @@
+{
+  "device": "Linux cloud VM, Intel Xeon Platinum 8573C, 5 visible vCPU; cgroup quota 4 CPU",
+  "browser": "Chromium 154, SwiftShader",
+  "physical_phone": false,
+  "recording_enabled": false,
+  "runs": [
+    {
+      "cpu_throttle": 1,
+      "network": "unthrottled localhost",
+      "scene": {
+        "fabricScene": "",
+        "state": "complete",
+        "importMs": "676.0999999940395",
+        "profile": "mobile",
+        "grabbed": "",
+        "cut": "1.0000",
+        "blade": "0.0120",
+        "seconds": "4.500",
+        "tool": "false",
+        "renderCount": "19",
+        "topMotion": "0",
+        "bottomMotion": "0",
+        "cpuRenderMs": "0.19999998807907104",
+        "cpuFrameMs": "0.29999998211860657",
+        "timings": "{\"contextAndSceneInitMs\":284.19999998807907,\"colorFetchMs\":45.69999998807907,\"studioFetchMs\":46.099999994039536,\"normalRoughnessFetchMs\":91.2000000178814,\"modelFetchMs\":90.7999999821186,\"modelParseMs\":8.700000017881393,\"studioInflateMs\":55.80000001192093,\"colorDecodeMs\":82.09999999403954,\"normalRoughnessDecodeMs\":74.2999999821186,\"resourcesReadyMs\":454.09999999403954,\"cpuPreparationMs\":158.80000001192093,\"textureUploadSubmitMs\":17.399999976158142,\"textureUploadCompleteWallMs\":167.7999999821186,\"shaderCompileMs\":21,\"gpuWarmupMs\":468.80000001192093,\"readyMs\":1279.5}",
+        "pixelCount": "718848",
+        "clothVertices": "7954",
+        "physicsVertices": "1050",
+        "interactive": "true",
+        "firstShownNavigationMs": "2683.9000000059605",
+        "firstShownMs": "1970.5999999940395",
+        "dragging": ""
+      },
+      "canvas": {
+        "width": 576,
+        "height": 1248,
+        "context": {
+          "alpha": true,
+          "antialias": true,
+          "depth": true,
+          "desynchronized": false,
+          "failIfMajorPerformanceCaveat": false,
+          "powerPreference": "low-power",
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "stencil": false,
+          "xrCompatible": false
+        },
+        "samples": 4,
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+      },
+      "samples": [
+        {
+          "cpu": 11.599999994039536,
+          "delta": 0
+        },
+        {
+          "cpu": 7.0999999940395355,
+          "delta": 24.599999994039536
+        },
+        {
+          "cpu": 18.5,
+          "delta": 226.19999998807907
+        },
+        {
+          "cpu": 3.5,
+          "delta": 237.90000000596046
+        },
+        {
+          "cpu": 3.699999988079071,
+          "delta": 235.80000001192093
+        },
+        {
+          "cpu": 4.9000000059604645,
+          "delta": 229.89999997615814
+        },
+        {
+          "cpu": 4.600000023841858,
+          "delta": 6.600000023841858
+        },
+        {
+          "cpu": 4.0999999940395355,
+          "delta": 238.89999997615814
+        },
+        {
+          "cpu": 3.5999999940395355,
+          "delta": 237.5
+        },
+        {
+          "cpu": 4.699999988079071,
+          "delta": 203.30000001192093
+        },
+        {
+          "cpu": 2.2999999821186066,
+          "delta": 228.80000001192093
+        },
+        {
+          "cpu": 4.300000011920929,
+          "delta": 276.7999999821186
+        },
+        {
+          "cpu": 8.400000005960464,
+          "delta": 191
+        },
+        {
+          "cpu": 4.200000017881393,
+          "delta": 176.80000001192093
+        },
+        {
+          "cpu": 3.0999999940395355,
+          "delta": 212.2999999821186
+        },
+        {
+          "cpu": 7,
+          "delta": 228.80000001192093
+        },
+        {
+          "cpu": 8,
+          "delta": 210.90000000596046
+        },
+        {
+          "cpu": 3.2000000178813934,
+          "delta": 177.5
+        },
+        {
+          "cpu": 7,
+          "delta": 450.40000000596046
+        },
+        {
+          "cpu": 12.899999976158142,
+          "delta": 231.09999999403954
+        },
+        {
+          "cpu": 6,
+          "delta": 0
+        },
+        {
+          "cpu": 4.5999999940395355,
+          "delta": 0
+        },
+        {
+          "cpu": 3,
+          "delta": 190.19999998807907
+        },
+        {
+          "cpu": 3.800000011920929,
+          "delta": 152.90000000596046
+        },
+        {
+          "cpu": 3.800000011920929,
+          "delta": 184
+        },
+        {
+          "cpu": 3,
+          "delta": 184
+        },
+        {
+          "cpu": 4.600000023841858,
+          "delta": 179.5
+        },
+        {
+          "cpu": 3.0999999940395355,
+          "delta": 150.7999999821186
+        },
+        {
+          "cpu": 3.4000000059604645,
+          "delta": 182.30000001192093
+        },
+        {
+          "cpu": 2.5999999940395355,
+          "delta": 176.30000001192093
+        },
+        {
+          "cpu": 3.0999999940395355,
+          "delta": 173.2999999821186
+        },
+        {
+          "cpu": 2.2999999821186066,
+          "delta": 4.5999999940395355
+        },
+        {
+          "cpu": 2.5999999940395355,
+          "delta": 163.2000000178814
+        },
+        {
+          "cpu": 3.4000000059604645,
+          "delta": 177.5
+        },
+        {
+          "cpu": 2.9000000059604645,
+          "delta": 176.40000000596046
+        },
+        {
+          "cpu": 3.5999999940395355,
+          "delta": 181
+        },
+        {
+          "cpu": 2.5999999940395355,
+          "delta": 154.7999999821186
+        },
+        {
+          "cpu": 3.300000011920929,
+          "delta": 177.30000001192093
+        },
+        {
+          "cpu": 3.2000000178813934,
+          "delta": 184.5
+        }
+      ],
+      "cpu_frame": {
+        "count": 39,
+        "median_ms": 3.699999988079071,
+        "p95_ms": 12.899999976158142
+      },
+      "render_intervals": {
+        "count": 36,
+        "median_ms": 184.0,
+        "p95_ms": 276.7999999821186
+      }
+    },
+    {
+      "cpu_throttle": 4,
+      "network": "8Mbps/80ms",
+      "scene": {
+        "fabricScene": "",
+        "state": "complete",
+        "importMs": "487.30000001192093",
+        "profile": "mobile",
+        "grabbed": "",
+        "cut": "1.0000",
+        "blade": "0.0120",
+        "seconds": "4.500",
+        "tool": "false",
+        "renderCount": "26",
+        "topMotion": "0",
+        "bottomMotion": "0",
+        "cpuRenderMs": "0.09999999403953552",
+        "cpuFrameMs": "0.4000000059604645",
+        "timings": "{\"contextAndSceneInitMs\":121.40000000596046,\"colorFetchMs\":764.9000000059605,\"colorDecodeMs\":54.099999994039536,\"modelFetchMs\":1297.699999988079,\"modelParseMs\":63.19999998807907,\"studioFetchMs\":2056.2999999821186,\"studioInflateMs\":127.89999997615814,\"normalRoughnessFetchMs\":3696.0999999940395,\"normalRoughnessDecodeMs\":72.5,\"resourcesReadyMs\":3912.0999999940395,\"cpuPreparationMs\":414.7000000178814,\"textureUploadSubmitMs\":94.7999999821186,\"textureUploadCompleteWallMs\":198.39999997615814,\"shaderCompileMs\":70.5,\"gpuWarmupMs\":560,\"readyMs\":5211.300000011921}",
+        "pixelCount": "718848",
+        "clothVertices": "7954",
+        "physicsVertices": "1050",
+        "interactive": "true",
+        "firstShownNavigationMs": "7699.699999988079",
+        "firstShownMs": "5738.0999999940395",
+        "dragging": ""
+      },
+      "canvas": {
+        "width": 576,
+        "height": 1248,
+        "context": {
+          "alpha": true,
+          "antialias": true,
+          "depth": true,
+          "desynchronized": false,
+          "failIfMajorPerformanceCaveat": false,
+          "powerPreference": "low-power",
+          "premultipliedAlpha": true,
+          "preserveDrawingBuffer": false,
+          "stencil": false,
+          "xrCompatible": false
+        },
+        "samples": 4,
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+      },
+      "samples": [
+        {
+          "cpu": 39.099999994039536,
+          "delta": 0
+        },
+        {
+          "cpu": 25.099999994039536,
+          "delta": 33
+        },
+        {
+          "cpu": 57.5,
+          "delta": 0
+        },
+        {
+          "cpu": 79.59999999403954,
+          "delta": 232.2000000178814
+        },
+        {
+          "cpu": 62.900000005960464,
+          "delta": 202.09999999403954
+        },
+        {
+          "cpu": 22.5,
+          "delta": 153.80000001192093
+        },
+        {
+          "cpu": 25,
+          "delta": 35.39999997615814
+        },
+        {
+          "cpu": 47.39999997615814,
+          "delta": 217.7000000178814
+        },
+        {
+          "cpu": 273.40000000596046,
+          "delta": 952.2999999821186
+        },
+        {
+          "cpu": 13.5,
+          "delta": 73.7000000178814
+        },
+        {
+          "cpu": 15.599999994039536,
+          "delta": 265.5
+        },
+        {
+          "cpu": 4.700000017881393,
+          "delta": 217.59999999403954
+        },
+        {
+          "cpu": 19.099999994039536,
+          "delta": 219.90000000596046
+        },
+        {
+          "cpu": 34.30000001192093,
+          "delta": 227.7999999821186
+        },
+        {
+          "cpu": 29.200000017881393,
+          "delta": 254.80000001192093
+        },
+        {
+          "cpu": 91.2000000178814,
+          "delta": 289.30000001192093
+        },
+        {
+          "cpu": 91.80000001192093,
+          "delta": 214.09999999403954
+        },
+        {
+          "cpu": 46.79999998211861,
+          "delta": 149.59999999403954
+        },
+        {
+          "cpu": 36.099999994039536,
+          "delta": 191.40000000596046
+        },
+        {
+          "cpu": 47.900000005960464,
+          "delta": 219.69999998807907
+        },
+        {
+          "cpu": 38.099999994039536,
+          "delta": 211.90000000596046
+        },
+        {
+          "cpu": 46.900000005960464,
+          "delta": 237
+        },
+        {
+          "cpu": 30.30000001192093,
+          "delta": 188.69999998807907
+        },
+        {
+          "cpu": 56,
+          "delta": 0
+        },
+        {
+          "cpu": 53.599999994039536,
+          "delta": 196.7000000178814
+        },
+        {
+          "cpu": 23.19999998807907,
+          "delta": 182.89999997615814
+        },
+        {
+          "cpu": 52.69999998807907,
+          "delta": 246.60000002384186
+        },
+        {
+          "cpu": 32.5,
+          "delta": 178.59999999403954
+        },
+        {
+          "cpu": 32.79999998211861,
+          "delta": 229.90000000596046
+        },
+        {
+          "cpu": 17.900000005960464,
+          "delta": 183.5
+        },
+        {
+          "cpu": 35.5,
+          "delta": 209.09999999403954
+        },
+        {
+          "cpu": 33.30000001192093,
+          "delta": 201.59999999403954
+        },
+        {
+          "cpu": 29.799999982118607,
+          "delta": 195.90000000596046
+        },
+        {
+          "cpu": 20.900000005960464,
+          "delta": 193.40000000596046
+        },
+        {
+          "cpu": 35.5,
+          "delta": 224.39999997615814
+        },
+        {
+          "cpu": 80.5,
+          "delta": 240.80000001192093
+        },
+        {
+          "cpu": 76.7999999821186,
+          "delta": 204.09999999403954
+        },
+        {
+          "cpu": 21.799999982118607,
+          "delta": 140.80000001192093
+        },
+        {
+          "cpu": 71,
+          "delta": 363.59999999403954
+        },
+        {
+          "cpu": 82.69999998807907,
+          "delta": 202.90000000596046
+        },
+        {
+          "cpu": 24.5,
+          "delta": 140.09999999403954
+        },
+        {
+          "cpu": 97.5,
+          "delta": 103.90000000596046
+        },
+        {
+          "cpu": 45.099999994039536,
+          "delta": 275
+        },
+        {
+          "cpu": 14.199999988079071,
+          "delta": 468.69999998807907
+        },
+        {
+          "cpu": 56.79999998211861,
+          "delta": 297.7000000178814
+        }
+      ],
+      "cpu_frame": {
+        "count": 45,
+        "median_ms": 36.099999994039536,
+        "p95_ms": 91.80000001192093
+      },
+      "render_intervals": {
+        "count": 42,
+        "median_ms": 210.5,
+        "p95_ms": 363.59999999403954
+      }
+    }
+  ],
+  "mobile_model_sha256": "19fdf5756ceb964470c5e8a3c5338b1be505d093c21177aa7da17c12f661c3b0"
+}

@@ -82,7 +82,8 @@ export function FabricCutScene({
       }
       if (!done && last) elapsed += (now - last) / 1000;
       last = now;
-      const fps = element.clientWidth < 768 ? 24 : 30;
+      // A stable 30 fps cadence divides common 60/120 Hz phone refresh rates.
+      const fps = 30;
       if (now - stamp >= 1000 / fps) {
         apply(elapsed);
         stamp = now - ((now - stamp) % (1000 / fps));
@@ -216,7 +217,7 @@ export function FabricCutScene({
     document.addEventListener("visibilitychange", visibility);
     element.addEventListener("webglcontextlost", contextLost, true);
     const importStart = performance.now();
-    void import("./create-cut-scene")
+    void import("./create-reference-cloth")
       .then((module) => {
         element.dataset.importMs = String(performance.now() - importStart);
         return module.createCutScene(element, abort.signal);

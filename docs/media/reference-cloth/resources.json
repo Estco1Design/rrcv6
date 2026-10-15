@@ -1,0 +1,27 @@
+[
+  {
+    "file": "public/intro/cloth-plate.webp",
+    "bytes": 131688,
+    "sha256": "f6f37cff29beddd763f66d94f0442d693d14dee2bfdc11e386c26de56837012d"
+  },
+  {
+    "file": "public/intro/cloth-plate-mobile.webp",
+    "bytes": 129566,
+    "sha256": "9a70746e8908c3a33d342e9659d8247e207ef3366e52742c9dbf884fee2aa5db"
+  },
+  {
+    "file": "public/intro/titanium-shears.glb",
+    "bytes": 948988,
+    "sha256": "394d567a814963645cf487e51b7aafd530130953a0b168bc75f73ec5d5914498"
+  },
+  {
+    "file": "public/intro/titanium-shears-mobile.glb",
+    "bytes": 623860,
+    "sha256": "c3143897b6826bee5f3633413330cd0347892944bfdbac2b6eff79b3463134c0"
+  },
+  {
+    "file": "public/intro/studio-hdr-cubeuv.bin.gz",
+    "bytes": 683373,
+    "sha256": "2b189040cc7930a65b592f42952dff9d71f42c82b7bdb63de0661a19bdae8f59"
+  }
+]

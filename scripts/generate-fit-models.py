@@ -2,10 +2,11 @@
 Run: blender -b --threads 4 --python scripts/generate-fit-models.py
 The mesh and target sources are retained under scripts/model-source (CC0).
 """
-import bpy,json,struct
+import bpy,json,struct,runpy,os
 from pathlib import Path
 from mathutils import Vector
 root=Path(__file__).resolve().parents[1];source=root/'scripts/model-source'
+asset_tools=runpy.run_path(str(root/'scripts/fit-asset-tools.py'))
 
 def read_source():
  verts=[];uv=[];faces=[];uvfaces=[];group=''
@@ -45,8 +46,21 @@ def make(kind):
  for polygon,indices in zip(mesh.polygons,uvfaces):
   for loop,index in zip(polygon.loop_indices,indices):layer.data[loop].uv=uv[index]
  bpy.context.view_layer.objects.active=body;body.select_set(True)
- # Keep smooth anatomical curvature and the original hands/feet topology.
- sub=body.modifiers.new('Anatomical surface','SUBSURF');sub.levels=1;sub.render_levels=1;bpy.ops.object.modifier_apply(modifier=sub.name)
+ # Real macro deltas, evaluated through the anatomical rig for every variant.
+ variants={}
+ morph_guides={}
+ for name,form in [('Lean','minweight'),('Full','maxweight')]:
+  points=[v.copy() for v in verts]
+  target(points,f'universal-{kind}-young-averagemuscle-averageweight.target',-1)
+  target(points,f'universal-{kind}-young-averagemuscle-{form}.target',1)
+  variants[name]=[Vector((p.x*scale,(p.y-low)*scale,p.z*scale-centre)) for p in points]
+  morph_guides[name]={}
+  for key,guide in guides.items():
+   samples=[p for i,p in enumerate(variants[name]) if i in used and abs(p.y-guide['y'])<.035 and abs(p.x)<.48]
+   morph_guides[name][key]={'y':guide['y'],'rx':max(abs(p.x) for p in samples)+.025,'rz':(max(p.z for p in samples)-min(p.z for p in samples))/2+.025,'z':(max(p.z for p in samples)+min(p.z for p in samples))/2}
+
+ body,rig=asset_tools['rig_and_morph'](body,normalized,variants,source,scale,low,centre)
+ asset_tools['fitted_hair'](kind,verts,scale,low,centre,source,root/'public/models')
  for polygon in body.data.polygons:polygon.use_smooth=True
  # Licensed native 2048px skins; no generated skin noise or enlarged images.
  skin=bpy.data.materials.new('CC0 '+kind+' skin');skin.use_nodes=True
@@ -57,6 +71,7 @@ def make(kind):
   normal=nodes.new('ShaderNodeTexImage');normal.image=bpy.data.images.load(str(source/'skins/male/Aksel_Skin_NRM.png'));normal.image.colorspace_settings.name='Non-Color';normal.image.scale(1024,1024);convert=nodes.new('ShaderNodeNormalMap');convert.inputs['Strength'].default_value=.4;skin.node_tree.links.new(normal.outputs['Color'],convert.inputs['Color']);skin.node_tree.links.new(convert.outputs['Normal'],bsdf.inputs['Normal'])
  body.data.materials.append(skin)
  body['measurementGuides']=json.dumps(guides)
+ body['morphMeasurementGuides']=json.dumps(morph_guides)
  # Licensed CC0 fitted eyes: barycentric binding follows the adult targets.
  mapping=[];axis_scale={};reading=False
  for line in (source/'eyes/eyes.mhclo').read_text().splitlines():
@@ -80,8 +95,8 @@ def make(kind):
   polygon.use_smooth=True
   for loop,index in zip(polygon.loop_indices,indices):layer.data[loop].uv=eye_uv[index]
  eye_material=bpy.data.materials.new('CC0 brown eyes');eye_material.use_nodes=True;bsdf=eye_material.node_tree.nodes.get('Principled BSDF');tex=eye_material.node_tree.nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(str(source/'eyes/brown-eye.png'));eye_material.node_tree.links.new(tex.outputs['Color'],bsdf.inputs['Base Color']);eye_material.node_tree.links.new(tex.outputs['Alpha'],bsdf.inputs['Alpha']);eye_material.surface_render_method='DITHERED';bsdf.inputs['Roughness'].default_value=.23;em.materials.append(eye_material)
- bpy.ops.object.select_all(action='DESELECT');body.select_set(True);eyes.select_set(True)
- dest=root/'public/models'/f'fit-{kind}.glb';bpy.ops.export_scene.gltf(filepath=str(dest),export_format='GLB',use_selection=True,export_apply=True,export_yup=True,export_extras=True,export_image_format='AUTO',export_jpeg_quality=92)
+ bpy.ops.object.select_all(action='DESELECT');body.select_set(True);eyes.select_set(True);rig.select_set(True)
+ dest=root/'public/models'/f'fit-{kind}.glb';bpy.ops.export_scene.gltf(filepath=str(dest),export_format='GLB',use_selection=True,export_apply=False,export_animations=False,export_morph=True,export_skins=True,export_yup=True,export_extras=True,export_image_format='AUTO',export_jpeg_quality=92)
  # The source eye atlas has zero-alpha cornea UVs. Preserve PNG alpha and
  # cut out that shell: JPEG/opaque export hides the real iris behind blue disks.
  raw=dest.read_bytes();length=struct.unpack_from('<I',raw,12)[0];document=json.loads(raw[20:20+length])
@@ -89,6 +104,7 @@ def make(kind):
   if 'brown eyes' in item.get('name',''):item['alphaMode']='MASK';item['alphaCutoff']=.1
  encoded=json.dumps(document,separators=(',',':')).encode();encoded+=b' '*((-len(encoded))%4);tail=raw[20+length:]
  dest.write_bytes(struct.pack('<III',0x46546C67,2,20+len(encoded)+len(tail))+struct.pack('<II',len(encoded),0x4E4F534A)+encoded+tail)
+ if os.environ.get("RRC_SKIP_FIT_RENDER")=="1":return
  # A white-background fallback uses exactly the same continuous mesh.
  bpy.ops.mesh.primitive_plane_add(size=200,location=(0,0,-.005));floor=bpy.context.object;floor.name='White studio';white=bpy.data.materials.new('White');white.diffuse_color=(1,1,1,1);floor.data.materials.append(white)
  world=bpy.context.scene.world;world.use_nodes=True;world.node_tree.nodes.get('Background').inputs['Color'].default_value=(1,1,1,1);world.node_tree.nodes.get('Background').inputs['Strength'].default_value=.8
